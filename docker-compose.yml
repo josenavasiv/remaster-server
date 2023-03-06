@@ -12,6 +12,17 @@ services:
             - '8080:5432'
         volumes:
             - pgmaster:/var/lib/postgresql/data
+    redismaster:
+        image: redis:latest
+        restart: always
+        container_name: redismaster
+        command: redis-server --save 20 1 --loglevel warning
+        ports:
+            - '8081:6379'
+        volumes:
+            - redismaster:/data
 volumes:
     pgmaster:
+        driver: local
+    redismaster:
         driver: local

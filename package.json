@@ -21,6 +21,8 @@
 	},
 	"homepage": "https://github.com/josenavasiv/remaster-server#readme",
 	"devDependencies": {
+		"@types/bcryptjs": "^2.4.2",
+		"@types/connect-redis": "^0.0.20",
 		"@types/cors": "^2.8.13",
 		"@types/express": "^4.17.17",
 		"@types/node": "^18.14.6",
@@ -31,9 +33,15 @@
 	"dependencies": {
 		"@apollo/server": "^4.4.1",
 		"@prisma/client": "^4.11.0",
+		"bcryptjs": "^2.4.3",
 		"body-parser": "^1.20.2",
+		"connect-redis": "^7.0.0",
 		"cors": "^2.8.5",
 		"express": "^4.18.2",
-		"graphql": "^16.6.0"
+		"express-session": "^1.17.3",
+		"graphql": "^16.6.0",
+		"ioredis": "^5.3.1",
+		"uuid": "^9.0.0",
+		"validator": "^13.9.0"
 	}
 }
