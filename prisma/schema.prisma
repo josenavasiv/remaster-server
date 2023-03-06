@@ -1,0 +1,120 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  user_id       Int            @id @default(autoincrement())
+  email         String         @unique
+  username      String         @unique
+  password      String
+  avatar_url    String
+  created_at    DateTime       @default(now())
+  artworks      Artwork[]
+  followers     Follow[]       @relation("Follower")
+  following     Follow[]       @relation("Following")
+  followedTags  Tag[]
+  notifications Notification[] @relation("Notified")
+  notified      Notification[] @relation("Notifier")
+  comments      Comment[]
+  likes         Like[]
+}
+
+model Tag {
+  tag_id   Int       @id @default(autoincrement())
+  tagname  String    @unique
+  artworks Artwork[]
+  follower User[]
+}
+
+model Artwork {
+  artwork_id  Int      @id @default(autoincrement())
+  uploader_id Int
+  user        User     @relation(fields: [uploader_id], references: [user_id])
+  image_urls  String[]
+  title       String
+  description String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  likesCount  Int
+
+  comments      Comment[]
+  likes         Like[]
+  tags          Tag[]
+  notifications Notification[]
+}
+
+model Comment {
+  comment_id        Int            @id @default(autoincrement())
+  comment           String
+  commenter_id      Int
+  commenter         User           @relation(fields: [commenter_id], references: [user_id]) // Many-to-One (Many Comments One User)
+  artwork_id        Int
+  artwork           Artwork        @relation(fields: [artwork_id], references: [artwork_id])
+  created_at        DateTime       @default(now())
+  updated_at        DateTime       @updatedAt
+  parent_comment_id Int?
+  parent_comment    Comment?       @relation("Parent", fields: [parent_comment_id], references: [comment_id])
+  replies           Comment[]      @relation("Parent")
+  likesCount        Int            @default(0)
+  likes             Like[]
+  Notification      Notification[]
+}
+
+enum LikeableType {
+  ARTWORK
+  COMMENT
+}
+
+model Like {
+  like_id       Int          @id @default(autoincrement())
+  user_id       Int //# Person who liked the artwork or comment
+  user          User         @relation(fields: [user_id], references: [user_id])
+  created_at    DateTime     @default(now())
+  likeable_type LikeableType
+  artwork_id    Int
+  artwork       Artwork      @relation(fields: [artwork_id], references: [artwork_id])
+  comment_id    Int?
+  comment       Comment?     @relation(fields: [comment_id], references: [comment_id])
+}
+
+model Follow {
+  follower_id  Int
+  following_id Int
+  created_at   DateTime @default(now())
+  follower     User     @relation("Follower", fields: [follower_id], references: [user_id])
+  following    User     @relation("Following", fields: [following_id], references: [user_id])
+
+  @@id([follower_id, following_id])
+}
+
+model Notification {
+  notification_id   Int              @id @default(autoincrement())
+  user_id           Int
+  notifier_id       Int
+  notification_type NotificationType
+  artwork_id        Int?
+  artwork           Artwork?         @relation(fields: [artwork_id], references: [artwork_id])
+  comment_id        Int?
+  comment           Comment?         @relation(fields: [comment_id], references: [comment_id])
+  created_at        DateTime         @default(now())
+  is_read           Boolean          @default(false)
+  user              User             @relation("Notified", fields: [user_id], references: [user_id])
+  notifier          User             @relation("Notifier", fields: [notifier_id], references: [user_id])
+}
+
+enum NotificationType {
+  UPLOADED
+  FOLLOWED
+  LIKED
+  COMMENTED
+  REPLIED
+  TAGGED
+}
