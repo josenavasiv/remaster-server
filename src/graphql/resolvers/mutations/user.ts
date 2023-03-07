@@ -78,12 +78,12 @@ export const user = {
 					username,
 					password: hashedPassword,
 					email,
-					avatar_url: TEMPORARY_AVATAR_URL,
+					avatarUrl: TEMPORARY_AVATAR_URL,
 				},
 			});
 
 			// Store session in request object
-			req.session.userID = user.user_id;
+			req.session.userID = user.id;
 
 			return {
 				user,

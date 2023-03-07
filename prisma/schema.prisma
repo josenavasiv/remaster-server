@@ -11,12 +11,12 @@ datasource db {
 }
 
 model User {
-  user_id       Int            @id @default(autoincrement())
+  id	        Int            @id @default(autoincrement())
   email         String         @unique
   username      String         @unique
   password      String
-  avatar_url    String
-  created_at    DateTime       @default(now())
+  avatarUrl     String
+  createdAt     DateTime       @default(now())
   artworks      Artwork[]
   followers     Follow[]       @relation("Follower")
   following     Follow[]       @relation("Following")
@@ -28,21 +28,21 @@ model User {
 }
 
 model Tag {
-  tag_id   Int       @id @default(autoincrement())
+  id   	   Int       @id @default(autoincrement())
   tagname  String    @unique
   artworks Artwork[]
   follower User[]
 }
 
 model Artwork {
-  artwork_id  Int      @id @default(autoincrement())
-  uploader_id Int
-  user        User     @relation(fields: [uploader_id], references: [user_id])
-  image_urls  String[]
+  id  Int      	 	   @id @default(autoincrement())
+  uploaderID  Int
+  uploader    User     @relation(fields: [uploaderID], references: [id])
+  imageUrls   String[]
   title       String
   description String
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   likesCount  Int
 
   comments      Comment[]
@@ -52,20 +52,20 @@ model Artwork {
 }
 
 model Comment {
-  comment_id        Int            @id @default(autoincrement())
+  id        		Int            @id @default(autoincrement())
   comment           String
-  commenter_id      Int
-  commenter         User           @relation(fields: [commenter_id], references: [user_id]) // Many-to-One (Many Comments One User)
-  artwork_id        Int
-  artwork           Artwork        @relation(fields: [artwork_id], references: [artwork_id])
-  created_at        DateTime       @default(now())
-  updated_at        DateTime       @updatedAt
-  parent_comment_id Int?
-  parent_comment    Comment?       @relation("Parent", fields: [parent_comment_id], references: [comment_id])
+  commenterId       Int
+  commenter         User           @relation(fields: [commenterId], references: [id]) // Many-to-One (Many Comments One User)
+  artworkId         Int
+  artwork           Artwork        @relation(fields: [artworkId], references: [id])
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  parentCommentId   Int?
+  parentComment     Comment?       @relation("Parent", fields: [parentCommentId], references: [id])
   replies           Comment[]      @relation("Parent")
   likesCount        Int            @default(0)
   likes             Like[]
-  Notification      Notification[]
+  notifications     Notification[]
 }
 
 enum LikeableType {
@@ -74,40 +74,40 @@ enum LikeableType {
 }
 
 model Like {
-  like_id       Int          @id @default(autoincrement())
-  user_id       Int //# Person who liked the artwork or comment
-  user          User         @relation(fields: [user_id], references: [user_id])
-  created_at    DateTime     @default(now())
-  likeable_type LikeableType
-  artwork_id    Int
-  artwork       Artwork      @relation(fields: [artwork_id], references: [artwork_id])
-  comment_id    Int?
-  comment       Comment?     @relation(fields: [comment_id], references: [comment_id])
+  id       		Int          @id @default(autoincrement())
+  userId        Int //# Person who liked the artwork or comment
+  user          User         @relation(fields: [userId], references: [id])
+  createdAt     DateTime     @default(now())
+  likeableType  LikeableType
+  artworkId     Int
+  artwork       Artwork      @relation(fields: [artworkId], references: [id])
+  commentId     Int?
+  comment       Comment?     @relation(fields: [commentId], references: [id])
 }
 
 model Follow {
-  follower_id  Int
-  following_id Int
-  created_at   DateTime @default(now())
-  follower     User     @relation("Follower", fields: [follower_id], references: [user_id])
-  following    User     @relation("Following", fields: [following_id], references: [user_id])
+  followerId   Int
+  followingId  Int
+  createdAt    DateTime @default(now())
+  follower     User     @relation("Follower", fields: [followerId], references: [id])
+  following    User     @relation("Following", fields: [followingId], references: [id])
 
-  @@id([follower_id, following_id])
+  @@id([followerId, followingId])
 }
 
 model Notification {
-  notification_id   Int              @id @default(autoincrement())
+  id   				Int              @id @default(autoincrement())
   user_id           Int
   notifier_id       Int
   notification_type NotificationType
   artwork_id        Int?
-  artwork           Artwork?         @relation(fields: [artwork_id], references: [artwork_id])
+  artwork           Artwork?         @relation(fields: [artwork_id], references: [id])
   comment_id        Int?
-  comment           Comment?         @relation(fields: [comment_id], references: [comment_id])
+  comment           Comment?         @relation(fields: [comment_id], references: [id])
   created_at        DateTime         @default(now())
   is_read           Boolean          @default(false)
-  user              User             @relation("Notified", fields: [user_id], references: [user_id])
-  notifier          User             @relation("Notifier", fields: [notifier_id], references: [user_id])
+  user              User             @relation("Notified", fields: [user_id], references: [id])
+  notifier          User             @relation("Notifier", fields: [notifier_id], references: [id])
 }
 
 enum NotificationType {

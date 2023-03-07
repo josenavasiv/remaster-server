@@ -58,14 +58,15 @@ const typeDefs = `#graphql
 
 	type User implements Node { # Username, Email, DOB, Profile
 		id: ID!
-		username: String!
 		email: String!
+		username: String!
 		avatarUrl: String!
 		artworks: [Artwork!]!
-		following: [Follow!]! # Where the User is the Follower
 		followers: [Follow!]! # Where the User is the Following
+		following: [Follow!]! # Where the User is the Follower
 		followedTags: [Tag!]! # Tags are their own seperate thing -> In the Database, its just a bunch of strings
 		notifications: [Notification!]!
+		likes: [Like!]!
 		isFollowedByLoggedInUser: Boolean 
 	}
 
@@ -137,8 +138,8 @@ const typeDefs = `#graphql
 		replies: [Comment!]! # Comment in Database will have an array of comments (Self-Relation One-To-Many)
 		# When querying the comments
 		# If !parentComment -> Show comment under Artwork -> Query the comment's replies
-		createdAt: String!
-		updatedAt: String!
+		# createdAt: String!
+		# updatedAt: String!
 		likesCount: Int!
 		isLikedByLoggedInUser: Boolean
 	}
