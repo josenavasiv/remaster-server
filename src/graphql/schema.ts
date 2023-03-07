@@ -2,7 +2,7 @@ const typeDefs = `#graphql
 	type Query { # Will contain the Algorithms for Explore, Suggested Posts | Users, Trending Tags
 		hello: String
 		# Artwork
-		# artwork(artworkID: ID!): # Clicking on an artwork opens a model with more details about the artwork
+		# artwork(artworkID: ID!): ArtworkPayload # Clicking on an artwork opens a model with more details about the artwork
 		# artworkSearch(): ???
 		# # Comment
 		# comment(commentID: ID!): ???
@@ -18,11 +18,11 @@ const typeDefs = `#graphql
 		# user(userID: ID!): # Clicking on a user means fetching a user's details PAGINATION OF ARTWORKS
 		# userDetails(): # Returns logged-in user's details
 		# userExplore(): # Apply Explore Algorithm For Logged-In User Here PAGINATION
-		# userFeed(): # Gets the main feed for the logged-in user's feed (Apply Main Feed & Suggested Posts Algorithm Here) (PAGINATION)
+		# userFeed(): ArtworksPaginatedPayload! # Gets the main feed for the logged-in user's feed (Apply Main Feed & Suggested Posts Algorithm Here) (PAGINATION)
 		# userSuggestedUsers(): # Component will fetch suggested users (For now randomly pick follows of follows)
 	}
 
-	# type Mutation { # User needs to be logged-in to do any of these
+	type Mutation { # User needs to be logged-in to do any of these
 		# # Artwork
 		# artworkCreate():
 		# artworkUpdate():
@@ -41,12 +41,12 @@ const typeDefs = `#graphql
 		# # Notification
 		# # Tag
 		# # User
-		# userRegister():
+		userRegister(username: String!, email: String!, password: String!): UserPayload!
 		# userLogin():
 		# userLogout():
 		# userForgotPassword():
 		# userChangePassword():
-	# }
+	}
 
 	# type Subscription {
 	# 	notifyUser: NotificationPayload!
@@ -65,8 +65,18 @@ const typeDefs = `#graphql
 		following: [Follow!]! # Where the User is the Follower
 		followers: [Follow!]! # Where the User is the Following
 		followedTags: [Tag!]! # Tags are their own seperate thing -> In the Database, its just a bunch of strings
-		notifications: [Notification]!
+		notifications: [Notification!]!
 		isFollowedByLoggedInUser: Boolean 
+	}
+
+	type UserPayload {
+		user: User # Needs to be nullable since when an error occurs -> No user is returned
+		errors: [Error!]!
+	}
+
+	type UsersSuggestedPayload { # MayNotNEed
+		user: [User!]!
+		errors: [Error!]!
 	}
 
 	type Tag implements Node { # Tagname, Related Artworks, Followers
@@ -74,6 +84,11 @@ const typeDefs = `#graphql
 		tagname: String!
 		artworks: [Artwork!]! # Every artwork that contains the tagname
 		isFollowedByLoggedInUser: Boolean
+	}
+
+	type TagPayload {
+		tag: Tag
+		errors: [Error!]!
 	}
 
 	type Artwork implements Node { # Description, Image, Tags, Comments, CreateAt
@@ -86,9 +101,19 @@ const typeDefs = `#graphql
 		updatedAt: String!
 		likesCount: Int!
 		likes: [Like!]!
-		tags: [Tag]! # Tags are regexed when uploading the artwork (An array of strings)
+		tags: [Tag!]! # Tags are regexed when uploading the artwork (An array of strings)
 		comments: [Comment!]! # We will query comments where parentComment is null -> These comments will have replies will query for those
 		isLikedByLoggedInUser: Boolean # Literally Add this and provide it within the Artwork as a resolver (Will have access to everything from Artwork such as id, imageUrl title, desc, ...)
+	}
+
+	type ArtworkPayload {
+		artwork: Artwork
+		errors: [Error!]!
+	}
+
+	type ArtworksPaginatedPayload {
+		artworks: [Artwork!]!
+		hasMore: Boolean!
 	}
 
 	enum LikeableType {
@@ -118,6 +143,11 @@ const typeDefs = `#graphql
 		isLikedByLoggedInUser: Boolean
 	}
 
+	type CommentPayload {
+		comment: Comment
+		errors: [Error!]!
+	}
+
 	type Follow {
 		id: ID!
 		follower: User!
@@ -137,6 +167,10 @@ const typeDefs = `#graphql
 		isRead: Boolean!
 		notifiedOf: Notifiable! # Depends on the notification type	
 	}
+
+	type Error {
+		message: String!
+	}	
 `;
 
 export default typeDefs;
