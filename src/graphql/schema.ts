@@ -42,8 +42,8 @@ const typeDefs = `#graphql
 		# # Tag
 		# # User
 		userRegister(username: String!, email: String!, password: String!): UserPayload!
-		# userLogin():
-		# userLogout():
+		userLogin(username: String!, password: String!): UserPayload!
+		userLogout: Boolean!
 		# userForgotPassword():
 		# userChangePassword():
 	}

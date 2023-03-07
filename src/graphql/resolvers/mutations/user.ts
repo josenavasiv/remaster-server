@@ -1,6 +1,6 @@
 import { Context, Error } from 'src/types.js';
 import { User } from '@prisma/client';
-import { TEMPORARY_AVATAR_URL } from '../../../lib/constants.js';
+import { COOKIE_NAME, TEMPORARY_AVATAR_URL } from '../../../lib/constants.js';
 import bcrypt from 'bcryptjs';
 import validator from 'validator';
 
@@ -11,10 +11,13 @@ interface UserPayloadType {
 	}[];
 }
 
-interface UserRegisterArgs {
+interface UserLoginArgs {
 	username: string;
-	email: string;
 	password: string;
+}
+
+interface UserRegisterArgs extends UserLoginArgs {
+	email: string;
 }
 
 const validateUserInput = (
@@ -109,5 +112,54 @@ export const user = {
 				user: null,
 			};
 		}
+	},
+	userLogin: async (
+		_parent: any,
+		{ username, password }: UserRegisterArgs,
+		{ req, prisma }: Context
+	): Promise<UserPayloadType> => {
+		const user = await prisma.user.findUnique({
+			where: {
+				username,
+			},
+		});
+
+		if (!user) {
+			return {
+				user: null,
+				errors: [{ message: 'Invalid username and/or password' }],
+			};
+		}
+
+		const isCorrectPassword = await bcrypt.compare(password, user.password);
+
+		if (!isCorrectPassword) {
+			return {
+				user: null,
+				errors: [{ message: 'Invalid username and/or password' }],
+			};
+		}
+
+		// Set session data
+		req.session.userID = user.id;
+
+		return {
+			user,
+			errors: [],
+		};
+	},
+	userLogout: async (_parent: any, _args: any, { res, req }: Context): Promise<Boolean> => {
+		// Destroy session by removing the session object and clearing the session cookie from the response object
+		return new Promise((resolve) => {
+			req.session.destroy((error) => {
+				res.clearCookie(COOKIE_NAME);
+				if (error) {
+					console.log(error);
+					resolve(true);
+					return;
+				}
+				resolve(false);
+			});
+		});
 	},
 };
