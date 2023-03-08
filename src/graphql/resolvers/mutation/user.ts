@@ -30,8 +30,7 @@ export const user = {
 		const { validInput, messages } = validateUserInput(username, email, password);
 
 		if (!validInput) {
-			console.log('INVALID USER INPUT');
-			for (const message in messages) {
+			for (const message of messages) {
 				errors.push({ message });
 			}
 			return {
@@ -74,8 +73,8 @@ export const user = {
 			console.log(error);
 
 			return {
-				errors: [{ message: 'Server error' }],
 				user: null,
+				errors: [{ message: 'Server Error' }],
 			};
 		}
 	},

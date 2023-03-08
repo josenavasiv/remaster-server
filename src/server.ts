@@ -12,7 +12,7 @@ import { Context } from 'src/types.js';
 import { PrismaClient } from '@prisma/client';
 export const prisma = new PrismaClient();
 
-// Redis Client Instance -> Connects to Redis Server
+// Redis Client Instantiation -> Connects to Redis Server
 import session from 'express-session';
 import { Redis } from 'ioredis';
 import RedisStore from 'connect-redis';
@@ -36,10 +36,10 @@ export const startServer = async () => {
 	});
 	await apolloServer.start();
 
-	if (redis.status !== 'connecting') {
-		// Redis Connection
-		await redis.connect().catch((error) => console.log(error));
-	}
+	// if (redis.status !== 'connecting') {
+	// 	// Redis Connection
+	// 	await redis.connect().catch((error) => console.log(error));
+	// }
 
 	app.set('trust proxy', true);
 
