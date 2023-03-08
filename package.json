@@ -6,9 +6,13 @@
 	"type": "module",
 	"scripts": {
 		"watch": "tsc -w",
-		"docker": "docker-compose up",
+		"docker:up": "docker-compose -f docker-compose.yml up -d",
 		"dev": "nodemon ./dist/index.js",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "dotenv -e .env.test -- jest --config jest.config.js --detectOpenHandles",
+		"docker:up:test": "docker compose -f docker-compose-test.yml up -d && dotenv -e .env.test -- npx prisma db push && npm run test && docker compose -f docker-compose-test.yml down",
+		"docker:down:test": "docker compose -f docker-compose-test.yml down",
+		"studio": "npx prisma studio",
+		"studio:test": "dotenv -e .env.test -- nodemon ./dist/index.js"
 	},
 	"repository": {
 		"type": "git",
@@ -25,11 +29,16 @@
 		"@types/connect-redis": "^0.0.20",
 		"@types/cors": "^2.8.13",
 		"@types/express": "^4.17.17",
+		"@types/jest": "^29.4.0",
 		"@types/node": "^18.14.6",
+		"@types/supertest": "^2.0.12",
 		"@types/uuid": "^9.0.1",
 		"@types/validator": "^13.7.13",
+		"jest": "^29.5.0",
 		"nodemon": "^2.0.21",
 		"prisma": "^4.11.0",
+		"supertest": "^6.3.3",
+		"ts-jest": "^29.0.5",
 		"typescript": "^4.9.5"
 	},
 	"dependencies": {

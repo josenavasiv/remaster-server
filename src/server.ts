@@ -36,8 +36,10 @@ export const startServer = async () => {
 	});
 	await apolloServer.start();
 
-	// Redis Connection
-	await redis.connect().catch((error) => console.log(error));
+	if (redis.status !== 'connecting') {
+		// Redis Connection
+		await redis.connect().catch((error) => console.log(error));
+	}
 
 	app.set('trust proxy', true);
 
@@ -74,7 +76,7 @@ export const startServer = async () => {
 		})
 	);
 
-	connection = httpServer.listen({ port: 4000 }, () => {
+	connection = httpServer.listen({ port: process.env.PORT }, () => {
 		console.log(`🚀 Server ready at http://localhost:4000/graphql`);
 	});
 

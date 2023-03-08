@@ -1,9 +1,9 @@
 {
 	"compilerOptions": {
 		"target": "es2020",
-		"module": "NodeNext",
-		"moduleResolution": "nodenext",
-		"types": ["node"],
+		"module": "ES6",
+		"moduleResolution": "node",
+		"types": ["node", "jest"],
 		"lib": ["dom", "es6", "es2017", "esnext.asynciterable", "es2020"],
 		"skipLibCheck": true,
 		"sourceMap": true,

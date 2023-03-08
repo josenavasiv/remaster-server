@@ -1,8 +1,8 @@
-import { Context, Error } from 'src/types.js';
+import { Context, Error } from '../../../types.js';
 import { User } from '@prisma/client';
 import { COOKIE_NAME, TEMPORARY_AVATAR_URL } from '../../../lib/constants.js';
 import bcrypt from 'bcryptjs';
-import validator from 'validator';
+import validateUserInput from '../../../utilities/validateUserInput.js';
 
 interface UserPayloadType {
 	user: User | null;
@@ -19,39 +19,6 @@ interface UserLoginArgs {
 interface UserRegisterArgs extends UserLoginArgs {
 	email: string;
 }
-
-const validateUserInput = (
-	username: string,
-	email: string,
-	password: string
-): { validInput: boolean; messages: string[] } => {
-	const validUsername = validator.default.isLength(username, { min: 3, max: 20 });
-	const validEmail = validator.default.isEmail(email);
-	const validPassword = validator.default.isLength(password, { min: 5, max: 20 });
-
-	let validInput = true;
-	let messages: string[] = [];
-
-	if (!validUsername) {
-		validInput = false;
-		messages.push('Invalid username');
-	}
-
-	if (!validEmail) {
-		validInput = false;
-		messages.push('Invalid email');
-	}
-
-	if (!validPassword) {
-		validInput = false;
-		messages.push('Invalid password');
-	}
-
-	return {
-		validInput,
-		messages,
-	};
-};
 
 export const user = {
 	userRegister: async (
@@ -87,7 +54,6 @@ export const user = {
 
 			// Store session in request object
 			req.session.userID = user.id;
-
 			return {
 				user,
 				errors: [],
@@ -155,10 +121,10 @@ export const user = {
 				res.clearCookie(COOKIE_NAME);
 				if (error) {
 					console.log(error);
-					resolve(true);
+					resolve(false);
 					return;
 				}
-				resolve(false);
+				resolve(true);
 			});
 		});
 	},

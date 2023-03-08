@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+    pgtest:
+        image: postgres:latest
+        restart: always
+        container_name: pgtest
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_DB=db
+        ports:
+            - '8082:5432'
+    redistest:
+        image: redis:latest
+        restart: always
+        container_name: redistest
+        command: redis-server --save 20 1 --loglevel warning
+        ports:
+            - '8083:6379'
