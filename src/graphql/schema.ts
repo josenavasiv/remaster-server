@@ -25,8 +25,8 @@ const typeDefs = `#graphql
 	type Mutation { # User needs to be logged-in to do any of these
 		# # Artwork
 		artworkCreate(title: String!, description: String!, imageUrls: [String!]!): ArtworkPayload!
-		# artworkUpdate():
-		# artworkDelete(artworkID: ID!):
+		artworkUpdate(artworkID: ID!, title: String, description: String, imageUrls: [String!]): ArtworkPayload!
+		artworkDelete(artworkID: ID!): ArtworkPayload!
 		# # Comment
 		# commentCreate(artworkID: ID!, comment: String!, parentCommentID: ID?):
 		# commentUpdate(commentID: ID!): 

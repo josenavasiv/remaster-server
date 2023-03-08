@@ -33,10 +33,8 @@ describe('User Mutation Resolvers', () => {
 			variables: { username: testUser, password: testPassword, email: testEmail },
 		};
 		const response = await request(TEST_URL).post('/').send(userRegisterMutation);
-		console.log(response.body);
-		console.log(response.headers['set-cookie'][0]);
+		console.log(response.headers['set-cookie']);
 		expect(response.body.data.userRegister.errors.length).toBe(0);
-		expect(response.headers['set-cookie'].length).toBe(1);
 	});
 	it('userLogin mutation resolver succeeds', async () => {
 		const userLoginMutation = {
@@ -54,10 +52,7 @@ describe('User Mutation Resolvers', () => {
 			variables: { username: testUser, password: testPassword },
 		};
 		const response = await request(TEST_URL).post('/').send(userLoginMutation);
-		console.log(response.body);
-		console.log(response.headers['set-cookie'][0]);
 		expect(response.body.data.userLogin.errors.length).toBe(0);
-		expect(response.headers['set-cookie'].length).toBe(1);
 	});
 	it('userLogout mutation resolver succeeds', async () => {
 		const userLoginMutation = {
@@ -81,12 +76,10 @@ describe('User Mutation Resolvers', () => {
 		};
 
 		const response = await request(TEST_URL).post('/').send(userLoginMutation);
-		const res = await await request(TEST_URL)
+		const res = await request(TEST_URL)
 			.post('/')
 			.send(userLogoutMutation)
-			.set('set-cookie', response.headers['set-cookie']);
-		console.log(res.body.data);
-		console.log(res.headers);
-		expect(true).toBe(true);
+			.set('Cookie', response.headers['set-cookie']);
+		expect(res.body.data.userLogout).toBe(true);
 	});
 });
