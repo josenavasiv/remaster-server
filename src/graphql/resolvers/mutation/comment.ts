@@ -7,6 +7,10 @@ interface CommentCreateArgs {
 	comment: string;
 }
 
+interface CommentReplyArgs extends CommentCreateArgs {
+	parentCommentID: string;
+}
+
 export interface CommentPayloadType {
 	comment: Comment | null;
 	errors: {
@@ -153,6 +157,51 @@ export const comment = {
 			};
 		} catch (error) {
 			throw new Error('Server error');
+		}
+	},
+	commentReply: async (
+		_parent: any,
+		{ artworkID, comment, parentCommentID }: CommentReplyArgs,
+		{ req, prisma }: Context
+	): Promise<CommentPayloadType> => {
+		// User is required to be logged-in
+		if (!req.session.userID) {
+			throw new Error('Not Authenticated');
+		}
+
+		const validReply = validator.isLength(comment, { min: 1, max: 100 });
+
+		if (!validReply) {
+			return {
+				comment: null,
+				errors: [{ message: 'Comment must be between 1 and 100 characters' }],
+			};
+		}
+
+		try {
+			const createdReply = await prisma.comment.create({
+				data: {
+					commenterId: req.session.userID,
+					comment,
+					artworkId: Number(artworkID),
+					parentCommentId: Number(parentCommentID),
+					likesCount: 0,
+				},
+			});
+
+			console.log('REPLY CREATED');
+
+			return {
+				comment: createdReply,
+				errors: [],
+			};
+
+		} catch (error: any) {
+			console.log(error);
+			return {
+				comment: null,
+				errors: [{ message: 'Server Error' }],
+			};
 		}
 	},
 };
