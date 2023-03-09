@@ -12,7 +12,7 @@ interface ArtworkUpdateArgs extends ArtworkCreateArgs {
 	artworkID: string;
 }
 
-interface ArtworkPayloadType {
+export interface ArtworkPayloadType {
 	artwork: Artwork | null;
 	errors: {
 		message: string;

@@ -2,7 +2,7 @@ const typeDefs = `#graphql
 	type Query { # Will contain the Algorithms for Explore, Suggested Posts | Users, Trending Tags
 		hello: String
 		# Artwork
-		# artwork(artworkID: ID!): ArtworkPayload # Clicking on an artwork opens a model with more details about the artwork
+		artwork(artworkID: ID!): ArtworkPayload! # Clicking on an artwork opens a model with more details about the artwork
 		# artworkSearch(): ???
 		# # Comment
 		# comment(commentID: ID!): ???
@@ -62,6 +62,7 @@ const typeDefs = `#graphql
 		username: String!
 		avatarUrl: String!
 		artworks: [Artwork!]!
+		# artworks(limit: Int!, cursor: Int): UserArtworksPaginatedPayload!
 		followers: [Follow!]! # Where the User is the Following
 		following: [Follow!]! # Where the User is the Follower
 		followedTags: [Tag!]! # Tags are their own seperate thing -> In the Database, its just a bunch of strings
@@ -74,6 +75,12 @@ const typeDefs = `#graphql
 		user: User # Needs to be nullable since when an error occurs -> No user is returned
 		errors: [Error!]!
 	}
+
+	# type UserArtworksPaginatedPayload {
+	# 	artworks: [Artwork!]
+	# 	hasMore: Boolean
+	# 	errors: [Error!]!
+	# }
 
 	type UsersSuggestedPayload { # MayNotNEed
 		user: [User!]!
