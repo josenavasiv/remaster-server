@@ -28,10 +28,10 @@ const typeDefs = `#graphql
 		artworkUpdate(artworkID: ID!, title: String, description: String, imageUrls: [String!]): ArtworkPayload!
 		artworkDelete(artworkID: ID!): ArtworkPayload!
 		# # Comment
-		# commentCreate(artworkID: ID!, comment: String!, parentCommentID: ID?):
-		# commentUpdate(commentID: ID!): 
-		# commentDelete(commentID: ID!):
-		# commentReply(parentCommentID: ID!):
+		commentCreate(artworkID: ID!, comment: String!): CommentPayload!
+		commentUpdate(commentID: ID!, comment: String!): CommentPayload!
+		commentDelete(commentID: ID!): CommentPayload!
+		# commentReply(artworkID: ID!, comment: String!, parentCommentID: ID!): CommentPayload!
 		# # Follow
 		# followUser(userID: ID!):
 		# followTag(tagname: String!):
