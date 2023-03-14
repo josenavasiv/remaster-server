@@ -48,8 +48,6 @@ export const comment = {
 				},
 			});
 
-			console.log('COMMENT CREATED');
-
 			return {
 				comment: createdComment,
 				errors: [],
@@ -189,13 +187,10 @@ export const comment = {
 				},
 			});
 
-			console.log('REPLY CREATED');
-
 			return {
 				comment: createdReply,
 				errors: [],
 			};
-
 		} catch (error: any) {
 			console.log(error);
 			return {

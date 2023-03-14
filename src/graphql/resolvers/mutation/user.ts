@@ -4,7 +4,7 @@ import { COOKIE_NAME, TEMPORARY_AVATAR_URL } from '../../../lib/constants.js';
 import bcrypt from 'bcryptjs';
 import validateUserInput from '../../../utilities/validateUserInput.js';
 
-interface UserPayloadType {
+export interface UserPayloadType {
 	user: User | null;
 	errors: {
 		message: string;

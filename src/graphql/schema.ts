@@ -15,8 +15,8 @@ const typeDefs = `#graphql
 		# # Tag
 		# tagArtworks(tagname: String!): PaginatedArtworksPayload!
 		# # User
-		# user(userID: ID!): # Clicking on a user means fetching a user's details PAGINATION OF ARTWORKS
-		# userDetails(): # Returns logged-in user's details
+		# user(userID: ID!): UserPayload! # Clicking on a user means fetching a user's details PAGINATION OF ARTWORKS
+		userLoggedIn: UserPayload! # Returns logged-in user's details
 		# userExplore(): # Apply Explore Algorithm For Logged-In User Here PAGINATION
 		# userFeed(): ArtworksPaginatedPayload! # Gets the main feed for the logged-in user's feed (Apply Main Feed & Suggested Posts Algorithm Here) (PAGINATION)
 		# userSuggestedUsers(): # Component will fetch suggested users (For now randomly pick follows of follows)
@@ -67,8 +67,9 @@ const typeDefs = `#graphql
 		following: [Follow!]! # Where the User is the Follower
 		followedTags: [Tag!]! # Tags are their own seperate thing -> In the Database, its just a bunch of strings
 		notifications: [Notification!]!
+		# notifications(limit: Int!, cursor: Int): UsernotificationsPaginatedPayload!
 		likes: [Like!]!
-		isFollowedByLoggedInUser: Boolean 
+		isFollowedByLoggedInUser: Boolean
 	}
 
 	type UserPayload {
@@ -111,6 +112,7 @@ const typeDefs = `#graphql
 		likes: [Like!]!
 		tags: [Tag!]! # Tags are regexed when uploading the artwork (An array of strings)
 		comments: [Comment!]! # We will query comments where parentComment is null -> These comments will have replies will query for those
+		topComment: Comment # Most liked comment
 		isLikedByLoggedInUser: Boolean # Literally Add this and provide it within the Artwork as a resolver (Will have access to everything from Artwork such as id, imageUrl title, desc, ...)
 	}
 
