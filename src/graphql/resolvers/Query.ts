@@ -3,6 +3,10 @@ import { Artwork } from '@prisma/client';
 import { ArtworkPayloadType } from './mutation/artwork';
 import { UserPayloadType } from './mutation/user';
 
+interface UserArgs {
+    userID: string;
+}
+
 interface UserFeedArgs {
     limit?: number;
     cursor?: number;
@@ -46,6 +50,32 @@ const Query = {
         } catch (error) {
             return {
                 artwork: null,
+                errors: [{ message: 'Server Error' }],
+            };
+        }
+    },
+    user: async (_parent: any, { userID }: UserArgs, { prisma }: Context): Promise<UserPayloadType> => {
+        try {
+            const user = await prisma.user.findUnique({
+                where: {
+                    id: Number(userID),
+                },
+            });
+
+            if (!user) {
+                return {
+                    user: null,
+                    errors: [{ message: 'User no longer exists' }],
+                };
+            }
+
+            return {
+                user,
+                errors: [],
+            };
+        } catch (error) {
+            return {
+                user: null,
                 errors: [{ message: 'Server Error' }],
             };
         }
