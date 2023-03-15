@@ -1,6 +1,20 @@
 import { Context } from 'src/types.js';
+import { Artwork } from '@prisma/client';
 import { ArtworkPayloadType } from './mutation/artwork';
 import { UserPayloadType } from './mutation/user';
+
+interface UserFeedArgs {
+    limit?: number;
+    cursor?: number;
+}
+
+interface PaginatedArtworksPayloadType {
+    artworks: Artwork[];
+    hasMore: boolean;
+    errors: {
+        message: string;
+    }[];
+}
 
 const Query = {
     hello: (_parent: any, _args: any, _context: Context) => {
@@ -32,6 +46,40 @@ const Query = {
         } catch (error) {
             return {
                 artwork: null,
+                errors: [{ message: 'Server Error' }],
+            };
+        }
+    },
+    userFeed: async (
+        _parent: any,
+        { limit, cursor }: UserFeedArgs,
+        { req, prisma }: Context
+    ): Promise<PaginatedArtworksPayloadType> => {
+        if (!req.session.userID) {
+            // return 10 latest posts
+        }
+
+        try {
+            const artworks = await prisma.artwork.findMany({
+                take: limit ?? 10,
+                skip: 1,
+                ...(cursor && {
+                    cursor: {
+                        id: cursor,
+                    },
+                }),
+                orderBy: [{ createdAt: 'desc' }],
+            });
+
+            return {
+                artworks,
+                hasMore: artworks.length === (limit ?? 10),
+                errors: [],
+            };
+        } catch (error) {
+            return {
+                artworks: [],
+                hasMore: false,
                 errors: [{ message: 'Server Error' }],
             };
         }
