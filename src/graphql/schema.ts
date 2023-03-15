@@ -36,7 +36,10 @@ const typeDefs = `#graphql
 		# followUser(userID: ID!):
 		# followTag(tagname: String!):
 		# # Likes
-		# likeArtwork(artworkID: ID!):
+		likeArtworkCreate(artworkID: ID!): LikePayload!
+		likeArtworkDelete(likeID: ID!, artworkID: ID!): LikePayload!
+		likeCommentCreate(commentID: ID!): LikePayload!
+		likeCommentDelete(likeID: ID!, commentID: ID!): LikePayload!
 		# likeComment(commentID: ID!):
 		# # Notification
 		# # Tag
@@ -133,9 +136,14 @@ const typeDefs = `#graphql
 	type Like { # CreatedAt
 		id: ID!
 		user: User!
-		artwork: Artwork!
+		artwork: Artwork
 		comment: Comment
 		likeableType: LikeableType!
+	}
+
+	type LikePayload {
+		like: Like
+		errors: [Error!]!
 	}
 
 	type Comment implements Node { # CommentText

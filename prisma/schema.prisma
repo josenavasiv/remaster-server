@@ -31,13 +31,13 @@ model Tag {
   id   	   Int       @id @default(autoincrement())
   tagname  String    @unique
   artworks Artwork[]
-  follower User[]
+  follower User[] 
 }
 
 model Artwork {
   id  Int      	 	   @id @default(autoincrement())
   uploaderID  Int
-  uploader    User     @relation(fields: [uploaderID], references: [id])
+  uploader    User     @relation(fields: [uploaderID], references: [id], onDelete: Cascade)
   imageUrls   String[]
   title       String
   description String
@@ -55,13 +55,13 @@ model Comment {
   id        		Int            @id @default(autoincrement())
   comment           String
   commenterId       Int
-  commenter         User           @relation(fields: [commenterId], references: [id]) // Many-to-One (Many Comments One User)
+  commenter         User           @relation(fields: [commenterId], references: [id], onDelete: Cascade) // Many-to-One (Many Comments One User)
   artworkId         Int
-  artwork           Artwork        @relation(fields: [artworkId], references: [id])
+  artwork           Artwork        @relation(fields: [artworkId], references: [id], onDelete: Cascade)
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
   parentCommentId   Int?
-  parentComment     Comment?       @relation("Parent", fields: [parentCommentId], references: [id])
+  parentComment     Comment?       @relation("Parent", fields: [parentCommentId], references: [id], onDelete: Cascade)
   replies           Comment[]      @relation("Parent")
   likesCount        Int            @default(0)
   likes             Like[]
@@ -76,21 +76,21 @@ enum LikeableType {
 model Like {
   id       		Int          @id @default(autoincrement())
   userId        Int //# Person who liked the artwork or comment
-  user          User         @relation(fields: [userId], references: [id])
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt     DateTime     @default(now())
   likeableType  LikeableType
-  artworkId     Int
-  artwork       Artwork      @relation(fields: [artworkId], references: [id])
+  artworkId     Int?
+  artwork       Artwork?      @relation(fields: [artworkId], references: [id], onDelete: Cascade)
   commentId     Int?
-  comment       Comment?     @relation(fields: [commentId], references: [id])
+  comment       Comment?     @relation(fields: [commentId], references: [id], onDelete: Cascade)
 }
 
 model Follow {
   followerId   Int
   followingId  Int
   createdAt    DateTime @default(now())
-  follower     User     @relation("Follower", fields: [followerId], references: [id])
-  following    User     @relation("Following", fields: [followingId], references: [id])
+  follower     User     @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following    User     @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@id([followerId, followingId])
 }
@@ -101,12 +101,12 @@ model Notification {
   notifier_id       Int
   notification_type NotificationType
   artwork_id        Int?
-  artwork           Artwork?         @relation(fields: [artwork_id], references: [id])
+  artwork           Artwork?         @relation(fields: [artwork_id], references: [id], onDelete: Cascade)
   comment_id        Int?
-  comment           Comment?         @relation(fields: [comment_id], references: [id])
+  comment           Comment?         @relation(fields: [comment_id], references: [id], onDelete: Cascade)
   created_at        DateTime         @default(now())
   is_read           Boolean          @default(false)
-  user              User             @relation("Notified", fields: [user_id], references: [id])
+  user              User             @relation("Notified", fields: [user_id], references: [id], onDelete: Cascade)
   notifier          User             @relation("Notifier", fields: [notifier_id], references: [id])
 }
 
