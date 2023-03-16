@@ -7,7 +7,7 @@ const typeDefs = `#graphql
 		# # Comment
 		# comment(commentID: ID!): ???
 		# comments(artworkID: ID!): ??? # PAGINATION
-		# commentReplies(commentID: ID!):
+		# commentReplies(parentCommentID: ID!): CommentsPayload!
 		# # Follow
 		# # Likes
 		# # Notification
@@ -15,7 +15,7 @@ const typeDefs = `#graphql
 		# # Tag
 		# tagArtworks(tagname: String!): PaginatedArtworksPayload!
 		# # User
-		user(userID: ID!): UserPayload! # Clicking on a user means fetching a user's details PAGINATION OF ARTWORKS
+		user(username: String!): UserPayload! # Clicking on a user means fetching a user's details PAGINATION OF ARTWORKS
 		userLoggedIn: UserPayload! # Returns logged-in user's details
 		# userExplore(): # Apply Explore Algorithm For Logged-In User Here PAGINATION
 		userFeed(limit: Int, cursor: Int): ArtworksPaginatedPayload! # Gets the main feed for the logged-in user's feed (Apply Main Feed & Suggested Posts Algorithm Here) (PAGINATION)

@@ -4,7 +4,7 @@ import { ArtworkPayloadType } from './mutation/artwork';
 import { UserPayloadType } from './mutation/user';
 
 interface UserArgs {
-    userID: string;
+    username: string;
 }
 
 interface UserFeedArgs {
@@ -54,11 +54,11 @@ const Query = {
             };
         }
     },
-    user: async (_parent: any, { userID }: UserArgs, { prisma }: Context): Promise<UserPayloadType> => {
+    user: async (_parent: any, { username }: UserArgs, { prisma }: Context): Promise<UserPayloadType> => {
         try {
             const user = await prisma.user.findUnique({
                 where: {
-                    id: Number(userID),
+                    username: username,
                 },
             });
 
