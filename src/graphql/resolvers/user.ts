@@ -10,7 +10,9 @@ const User = {
                 id,
             },
             select: {
-                artworks: true,
+                artworks: {
+                    orderBy: [{ createdAt: 'desc' }],
+                },
             },
         });
 
@@ -26,7 +28,9 @@ const User = {
                 id,
             },
             select: {
-                likes: true,
+                likes: {
+                    orderBy: [{ createdAt: 'desc' }],
+                },
             },
         });
 
@@ -50,6 +54,7 @@ const User = {
                     where: {
                         likeableType: 'ARTWORK',
                     },
+                    orderBy: [{ createdAt: 'desc' }],
                 },
             },
         });

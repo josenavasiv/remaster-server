@@ -92,11 +92,11 @@ const Query = {
         try {
             const artworks = await prisma.artwork.findMany({
                 take: limit ?? 10,
-                skip: 1,
                 ...(cursor && {
                     cursor: {
                         id: cursor,
                     },
+                    skip: 1,
                 }),
                 orderBy: [{ createdAt: 'desc' }],
             });
