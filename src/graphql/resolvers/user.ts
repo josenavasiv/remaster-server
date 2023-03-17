@@ -22,6 +22,25 @@ const User = {
 
         return artworks.artworks;
     },
+    isFollowedByLoggedInUser: async ({ id }: User, _args: any, { req, prisma }: Context): Promise<Boolean | null> => {
+        // If user is logged-in, return null -> Indicaates a non-logged-in user cannot like
+        if (!req.session.userID || req.session.userID === id) {
+            return null;
+        }
+
+        const isFollowed = await prisma.follow.findFirst({
+            where: {
+                followerId: req.session.userID,
+                followingId: id,
+            },
+        });
+
+        if (!isFollowed) {
+            return false;
+        }
+
+        return true;
+    },
     likes: async ({ id }: User, _args: any, { prisma }: Context): Promise<Like[]> => {
         const likes = await prisma.user.findUnique({
             where: {

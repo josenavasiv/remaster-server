@@ -11,9 +11,13 @@ const Comment = {
 
         return uploader!;
     },
-    isLikedByLoggedInUser: async ({ id }: Comment, _args: any, { req, prisma }: Context): Promise<Boolean | null> => {
+    isLikedByLoggedInUser: async (
+        { id, commenterId }: Comment,
+        _args: any,
+        { req, prisma }: Context
+    ): Promise<Boolean | null> => {
         // If user is logged-in, return null -> Indicaates a non-logged-in user cannot like
-        if (!req.session.userID) {
+        if (!req.session.userID || req.session.userID === commenterId) {
             return null;
         }
 

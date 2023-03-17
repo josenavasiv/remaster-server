@@ -26,12 +26,15 @@ const Artwork = {
 
         return artwork.comments;
     },
-    isLikedByLoggedInUser: async ({ id }: Artwork, _args: any, { req, prisma }: Context): Promise<Boolean | null> => {
+    isLikedByLoggedInUser: async (
+        { id, uploaderID }: Artwork,
+        _args: any,
+        { req, prisma }: Context
+    ): Promise<Boolean | null> => {
         // If user is logged-in, return null -> Indicaates a non-logged-in user cannot like
-        if (!req.session.userID) {
+        if (!req.session.userID || req.session.userID === uploaderID) {
             return null;
         }
-
         const isLiked = await prisma.like.findFirst({
             where: {
                 userId: req.session.userID,
@@ -45,24 +48,29 @@ const Artwork = {
 
         return true;
     },
-    topComment: async ({ id }: Artwork, _args: any, { prisma }: Context): Promise<Comment | null> => {
-        const topComment = await prisma.comment.findMany({
+    recentComments: async ({ id }: Artwork, _args: any, { prisma }: Context): Promise<Comment[]> => {
+        const artwork = await prisma.artwork.findUnique({
             where: {
-                artworkId: id,
+                id,
             },
-            orderBy: [
-                {
-                    likesCount: 'desc',
+            select: {
+                comments: {
+                    where: {
+                        parentComment: {
+                            is: null,
+                        },
+                    },
+                    take: 2,
+                    orderBy: [{ createdAt: 'desc' }],
                 },
-            ],
-            take: 1,
+            },
         });
 
-        if (!topComment) {
-            return null;
+        if (!artwork?.comments) {
+            return [];
         }
 
-        return topComment[0];
+        return artwork.comments;
     },
     // When the query requests an Artwork's uploader, their artworks will be populated by this resolver
     uploader: async ({ uploaderID }: Artwork, _args: any, { prisma }: Context): Promise<User> => {

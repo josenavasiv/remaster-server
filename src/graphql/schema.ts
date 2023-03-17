@@ -116,7 +116,7 @@ const typeDefs = `#graphql
 		likes: [Like!]!
 		tags: [Tag!]! # Tags are regexed when uploading the artwork (An array of strings)
 		comments: [Comment!]! # We will query comments where parentComment is null -> These comments will have replies will query for those
-		topComment: Comment # Most liked comment
+		recentComments: [Comment!]! # Most liked comment
 		isLikedByLoggedInUser: Boolean # Literally Add this and provide it within the Artwork as a resolver (Will have access to everything from Artwork such as id, imageUrl title, desc, ...)
 	}
 
