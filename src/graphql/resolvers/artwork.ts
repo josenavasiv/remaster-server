@@ -9,7 +9,14 @@ const Artwork = {
                 id,
             },
             select: {
-                comments: true,
+                comments: {
+                    where: {
+                        parentComment: {
+                            is: null,
+                        },
+                    },
+                    orderBy: [{ createdAt: 'desc' }],
+                },
             },
         });
 

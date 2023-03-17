@@ -154,11 +154,12 @@ const typeDefs = `#graphql
 		commenter: User!
 		artwork: Artwork! # All comments belong to an artwork
 		parentComment: Comment # If parent comment exists, shove the comment under the parent comment as replies
+		parentCommentId: ID
 		replies: [Comment!]! # Comment in Database will have an array of comments (Self-Relation One-To-Many)
 		# When querying the comments
 		# If !parentComment -> Show comment under Artwork -> Query the comment's replies
-		# createdAt: String!
-		# updatedAt: String!
+		createdAt: String!
+		updatedAt: String!
 		likesCount: Int!
 		isLikedByLoggedInUser: Boolean
 	}
