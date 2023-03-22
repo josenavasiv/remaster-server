@@ -26,70 +26,84 @@ import { COOKIE_NAME, __prod__ } from './lib/constants.js';
 // Server Object
 let connection: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>;
 
+// Storage Route
+import storageRouter from './controllers/storage.js';
+
 export const startServer = async () => {
-	const app = express();
-	const httpServer = http.createServer(app);
-	const apolloServer = new ApolloServer<Context>({
-		typeDefs,
-		resolvers,
-		plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-	});
-	await apolloServer.start();
+    const app = express();
+    const httpServer = http.createServer(app);
+    const apolloServer = new ApolloServer<Context>({
+        typeDefs,
+        resolvers,
+        plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+    });
+    await apolloServer.start();
 
-	// if (redis.status !== 'connecting') {
-	// 	// Redis Connection
-	// 	await redis.connect().catch((error) => console.log(error));
-	// }
+    // if (redis.status !== 'connecting') {
+    // 	// Redis Connection
+    // 	await redis.connect().catch((error) => console.log(error));
+    // }
 
-	app.set('trust proxy', true);
+    app.set('trust proxy', true);
 
-	// Middleware
-	app.use(
-		'/graphql',
-		bodyParser.json(),
-		bodyParser.urlencoded({ extended: false }),
-		cors<cors.CorsRequest>({
-			origin: 'http://localhost:3000',
-			credentials: true,
-		}),
-		session({
-			name: COOKIE_NAME,
-			store: new RedisStore({ client: redis, disableTouch: true }),
-			cookie: {
-				maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // Max Age of the Cookie in ms
-				httpOnly: true, // Prevents accessing cooking via the browser
-				secure: __prod__, // cookie only work in https (false in development|testing mode)
-				sameSite: 'lax', // csrf
-			},
-			saveUninitialized: false, // Creates a session by default
-			secret: process.env.REDIS_SECRET as string,
-			resave: false,
-		}),
-		expressMiddleware(apolloServer, {
-			// Providing the /graphql endpoint to express
-			context: async ({ req, res }) => ({
-				req,
-				res,
-				prisma,
-				redis,
-			}),
-		})
-	);
+    const sessionCookieMiddlware = session({
+        name: COOKIE_NAME,
+        store: new RedisStore({ client: redis, disableTouch: true }),
+        cookie: {
+            maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // Max Age of the Cookie in ms
+            httpOnly: true, // Prevents accessing cooking via the browser
+            secure: __prod__, // cookie only work in https (false in development|testing mode)
+            sameSite: 'lax', // csrf
+        },
+        saveUninitialized: false, // Creates a session by default
+        secret: process.env.REDIS_SECRET as string,
+        resave: false,
+    });
 
-	connection = httpServer.listen({ port: process.env.PORT }, () => {
-		console.log(`🚀 Server ready at http://localhost:4000/graphql`);
-	});
+    const corsMiddlware = cors<cors.CorsRequest>({
+        origin: 'http://localhost:3000',
+        credentials: true,
+    });
 
-	return {
-		connection,
-		httpServer,
-		apolloServer,
-		redis,
-	};
+    // Middleware
+    app.use(
+        '/graphql',
+        bodyParser.json(),
+        bodyParser.urlencoded({ extended: false }),
+        corsMiddlware,
+        sessionCookieMiddlware,
+        expressMiddleware(apolloServer, {
+            // Providing the /graphql endpoint to express
+            context: async ({ req, res }) => ({
+                req,
+                res,
+                prisma,
+                redis,
+            }),
+        })
+    );
+
+    // Storage Route
+    app.use(bodyParser.json());
+    app.use(bodyParser.urlencoded({ extended: false }));
+    app.use(corsMiddlware);
+    app.use(sessionCookieMiddlware);
+    app.use('/storage', storageRouter);
+
+    connection = httpServer.listen({ port: process.env.PORT }, () => {
+        console.log(`🚀 Server ready at http://localhost:4000/graphql`);
+    });
+
+    return {
+        connection,
+        httpServer,
+        apolloServer,
+        redis,
+    };
 };
 
 export const stopServer = async () => {
-	connection.close();
-	await prisma.$disconnect();
-	redis.disconnect();
+    connection.close();
+    await prisma.$disconnect();
+    redis.disconnect();
 };
