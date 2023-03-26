@@ -1,5 +1,5 @@
 import { Context } from 'src/types';
-import { User, Comment } from '@prisma/client';
+import { User, Comment, Like } from '@prisma/client';
 
 const Comment = {
     commenter: async ({ commenterId }: Comment, _args: any, { prisma }: Context): Promise<User> => {
@@ -15,24 +15,29 @@ const Comment = {
         { id, commenterId }: Comment,
         _args: any,
         { req, prisma }: Context
-    ): Promise<Boolean | null> => {
+    ): Promise<Like | null> => {
         // If user is logged-in, return null -> Indicaates a non-logged-in user cannot like
         if (!req.session.userID || req.session.userID === commenterId) {
             return null;
         }
 
-        const isLiked = await prisma.like.findFirst({
+        const like = await prisma.like.findFirst({
             where: {
                 userId: req.session.userID,
                 commentId: id,
             },
         });
 
-        if (!isLiked) {
-            return false;
-        }
+        return like;
+    },
+    parentComment: async ({ parentCommentId }: Comment, _args: any, { prisma }: Context): Promise<Comment> => {
+        const parentComment = await prisma.comment.findUnique({
+            where: {
+                id: parentCommentId!,
+            },
+        });
 
-        return true;
+        return parentComment!;
     },
     replies: async ({ id }: Comment, _args: any, { prisma }: Context): Promise<Comment[]> => {
         // Eventually will be paginated

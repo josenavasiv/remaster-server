@@ -1,5 +1,5 @@
 import { Context } from 'src/types';
-import { User, Artwork, Comment } from '@prisma/client';
+import { User, Artwork, Comment, Like } from '@prisma/client';
 
 const Artwork = {
     // Eventually this will be paginated
@@ -30,23 +30,19 @@ const Artwork = {
         { id, uploaderID }: Artwork,
         _args: any,
         { req, prisma }: Context
-    ): Promise<Boolean | null> => {
+    ): Promise<Like | null> => {
         // If user is logged-in, return null -> Indicaates a non-logged-in user cannot like
         if (!req.session.userID || req.session.userID === uploaderID) {
             return null;
         }
-        const isLiked = await prisma.like.findFirst({
+        const like = await prisma.like.findFirst({
             where: {
                 userId: req.session.userID,
                 artworkId: id,
             },
         });
 
-        if (!isLiked) {
-            return false;
-        }
-
-        return true;
+        return like;
     },
     recentComments: async ({ id }: Artwork, _args: any, { prisma }: Context): Promise<Comment[]> => {
         const artwork = await prisma.artwork.findUnique({
