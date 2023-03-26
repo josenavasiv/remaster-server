@@ -2,6 +2,7 @@ import express from 'express';
 import formidable from 'formidable';
 import fs from 'fs';
 import s3Client from '../lib/s3Client.js';
+import { nanoid } from 'nanoid';
 
 const storageRouter = express.Router();
 
@@ -16,35 +17,37 @@ storageRouter.post('/', async (request, response) => {
             return response.status(406).json({ error: 'No images provided to store' });
         }
 
-        const filesToStore: { newFilename: string; filepath: string }[] = [];
+        const filesToStore: { extension: string; filepath: string }[] = [];
 
         Object.entries(files).forEach((file) => {
             filesToStore.push({
                 //@ts-expect-error
-                newFilename: `${file[1][0].newFilename}${FileExtension(file[1][0].originalFilename)}`,
+                extension: FileExtension(file[1][0].originalFilename),
                 //@ts-expect-error
                 filepath: file[1][0].filepath as string,
             });
         });
 
+        // Upload to Digital Ocean Space
+        // NEED TO REWORK
         const urls = await Promise.all(
-            filesToStore.map(({ newFilename, filepath }) => {
-                return new Promise((resolve) => {
+            filesToStore.map(({ extension, filepath }) => {
+                return new Promise(async (resolve) => {
+                    const generatedID = nanoid();
                     const params = {
                         Bucket: process.env.DO_SPACES_BUCKET as string,
-                        Key: `${request.session.userID}${newFilename}`,
+                        Key: `${generatedID}${extension}`,
                         Body: fs.createReadStream(filepath),
                         ACL: 'public-read',
                     };
-                    s3Client.putObject(params);
+                    await s3Client.putObject(params);
                     resolve(
-                        `https://${process.env.DO_SPACES_BUCKET}.${process.env.DO_SPACES_ENDPOINT}/${request.session.userID}${newFilename}`
+                        `https://${process.env.DO_SPACES_BUCKET}.${process.env.DO_SPACES_ENDPOINT}/${generatedID}${extension}`
                     );
                 });
             })
         );
-        // Upload to Digital Ocean Space
-
+        console.log(urls);
         return response.status(200).send({
             urls,
         });
