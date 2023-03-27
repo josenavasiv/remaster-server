@@ -7,9 +7,9 @@ import { nanoid } from 'nanoid';
 const storageRouter = express.Router();
 
 storageRouter.post('/', async (request, response) => {
-    if (!request.session?.userID) {
-        return response.status(401).json({ error: 'User login required' });
-    }
+    // if (!request.session?.userID) {
+    //     return response.status(401).json({ error: 'User login required' });
+    // }
 
     const form = formidable({ multiples: true });
     form.parse(request, async (_error, _fields, files) => {

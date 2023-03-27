@@ -44,7 +44,7 @@ const typeDefs = `#graphql
 		# # Notification
 		# # Tag
 		# # User
-		userRegister(username: String!, email: String!, password: String!): UserPayload!
+		userRegister(username: String!, email: String!, password: String!, avatarUrl: String): UserPayload!
 		userLogin(username: String!, password: String!): UserPayload!
 		userLogout: Boolean!
 		# userForgotPassword():
