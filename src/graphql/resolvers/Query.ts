@@ -1,5 +1,5 @@
 import { Context } from 'src/types.js';
-import { Artwork } from '@prisma/client';
+import { Artwork, Tag } from '@prisma/client';
 import { ArtworkPayloadType } from './mutation/artwork';
 import { UserPayloadType } from './mutation/user';
 
@@ -15,6 +15,13 @@ interface UserFeedArgs {
 interface PaginatedArtworksPayloadType {
     artworks: Artwork[];
     hasMore: boolean;
+    errors: {
+        message: string;
+    }[];
+}
+
+interface TagsPayload {
+    tags: Tag[];
     errors: {
         message: string;
     }[];
@@ -80,6 +87,42 @@ const Query = {
             };
         }
     },
+    userExplore: async (
+        _parent: any,
+        { limit, cursor }: UserFeedArgs,
+        { req, prisma }: Context
+    ): Promise<PaginatedArtworksPayloadType> => {
+        if (!req.session.userID) {
+        }
+
+        // This will return artworks based on the amount of likes an artwork has, user activity etc...
+        // For now it is the same as a user's feed
+
+        try {
+            const artworks = await prisma.artwork.findMany({
+                take: limit ?? 10,
+                ...(cursor && {
+                    cursor: {
+                        id: cursor,
+                    },
+                    skip: 1,
+                }),
+                orderBy: [{ createdAt: 'desc' }],
+            });
+
+            return {
+                artworks,
+                hasMore: artworks.length === (limit ?? 10),
+                errors: [],
+            };
+        } catch (error) {
+            return {
+                artworks: [],
+                hasMore: false,
+                errors: [{ message: 'Server Error' }],
+            };
+        }
+    },
     userFeed: async (
         _parent: any,
         { limit, cursor }: UserFeedArgs,
@@ -110,6 +153,27 @@ const Query = {
             return {
                 artworks: [],
                 hasMore: false,
+                errors: [{ message: 'Server Error' }],
+            };
+        }
+    },
+    userExploreTags: async (_parent: any, _args: any, { req, prisma }: Context): Promise<TagsPayload> => {
+        if (!req.session.userID) {
+        }
+
+        try {
+            const tags = await prisma.tag.findMany({
+                take: 10,
+                orderBy: [{ id: 'desc' }],
+            });
+
+            return {
+                tags,
+                errors: [],
+            };
+        } catch (error) {
+            return {
+                tags: [],
                 errors: [{ message: 'Server Error' }],
             };
         }

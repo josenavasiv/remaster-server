@@ -17,7 +17,8 @@ const typeDefs = `#graphql
 		# # User
 		user(username: String!): UserPayload! # Clicking on a user means fetching a user's details PAGINATION OF ARTWORKS
 		userLoggedIn: UserPayload! # Returns logged-in user's details
-		# userExplore(): # Apply Explore Algorithm For Logged-In User Here PAGINATION
+		userExplore(limit: Int, cursor: Int): ArtworksPaginatedPayload! # Apply Explore Algorithm For Logged-In User Here PAGINATION
+		userExploreTags: TagsPayload!
 		userFeed(limit: Int, cursor: Int): ArtworksPaginatedPayload! # Gets the main feed for the logged-in user's feed (Apply Main Feed & Suggested Posts Algorithm Here) (PAGINATION)
 		# userSuggestedUsers(): # Component will fetch suggested users (For now randomly pick follows of follows)
 	}
@@ -101,6 +102,11 @@ const typeDefs = `#graphql
 
 	type TagPayload {
 		tag: Tag
+		errors: [Error!]!
+	}
+
+	type TagsPayload {
+		tags: [Tag!]!
 		errors: [Error!]!
 	}
 
