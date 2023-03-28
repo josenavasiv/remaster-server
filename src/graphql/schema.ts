@@ -13,7 +13,7 @@ const typeDefs = `#graphql
 		# # Notification
 		# notifications(userID: ID!):
 		# # Tag
-		# tagArtworks(tagname: String!): PaginatedArtworksPayload!
+		tagArtworks(tagname: String!): ArtworksPaginatedPayload!
 		# # User
 		user(username: String!): UserPayload! # Clicking on a user means fetching a user's details PAGINATION OF ARTWORKS
 		userLoggedIn: UserPayload! # Returns logged-in user's details

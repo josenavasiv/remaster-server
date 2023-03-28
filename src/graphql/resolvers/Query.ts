@@ -20,6 +20,11 @@ interface PaginatedArtworksPayloadType {
     }[];
 }
 
+interface TagArtworksArgs extends UserFeedArgs {
+    // tagID: string;
+    tagname: string;
+}
+
 interface TagsPayload {
     tags: Tag[];
     errors: {
@@ -57,6 +62,46 @@ const Query = {
         } catch (error) {
             return {
                 artwork: null,
+                errors: [{ message: 'Server Error' }],
+            };
+        }
+    },
+    tagArtworks: async (
+        _parent: any,
+        { tagname, limit, cursor }: TagArtworksArgs,
+        { req, prisma }: Context
+    ): Promise<PaginatedArtworksPayloadType> => {
+        if (!req.session.userID) {
+        }
+
+        try {
+            const tagArtworks = await prisma.tag.findUnique({
+                where: {
+                    tagname: tagname,
+                },
+                select: {
+                    artworks: {
+                        take: limit ?? 10,
+                        ...(cursor && {
+                            cursor: {
+                                id: cursor,
+                            },
+                            skip: 1,
+                        }),
+                        orderBy: [{ createdAt: 'desc' }],
+                    },
+                },
+            });
+
+            return {
+                artworks: tagArtworks?.artworks ?? [],
+                hasMore: tagArtworks?.artworks.length === (limit ?? 10),
+                errors: [],
+            };
+        } catch (error) {
+            return {
+                artworks: [],
+                hasMore: false,
                 errors: [{ message: 'Server Error' }],
             };
         }
