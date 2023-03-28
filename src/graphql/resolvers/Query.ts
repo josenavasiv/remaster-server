@@ -20,8 +20,10 @@ interface PaginatedArtworksPayloadType {
     }[];
 }
 
-interface TagArtworksArgs extends UserFeedArgs {
+interface TagArtworksArgs {
     // tagID: string;
+	take?: number;
+	skip?: number;
     tagname: string;
 }
 
@@ -68,7 +70,7 @@ const Query = {
     },
     tagArtworks: async (
         _parent: any,
-        { tagname, limit, cursor }: TagArtworksArgs,
+        { tagname, skip, take }: TagArtworksArgs,
         { req, prisma }: Context
     ): Promise<PaginatedArtworksPayloadType> => {
         if (!req.session.userID) {
@@ -81,13 +83,8 @@ const Query = {
                 },
                 select: {
                     artworks: {
-                        take: limit ?? 10,
-                        ...(cursor && {
-                            cursor: {
-                                id: cursor,
-                            },
-                            skip: 1,
-                        }),
+                        skip: skip ?? 0,
+                        take: take ?? 10,
                         orderBy: [{ createdAt: 'desc' }],
                     },
                 },
@@ -95,7 +92,7 @@ const Query = {
 
             return {
                 artworks: tagArtworks?.artworks ?? [],
-                hasMore: tagArtworks?.artworks.length === (limit ?? 10),
+                hasMore: tagArtworks?.artworks.length === (take ?? 10),
                 errors: [],
             };
         } catch (error) {
