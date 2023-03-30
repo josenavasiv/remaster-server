@@ -11,7 +11,7 @@ const typeDefs = `#graphql
 		# # Follow
 		# # Likes
 		# # Notification
-		# notifications(userID: ID!):
+		notifications(skip: Int, take: Int): NotificationsPaginatedPayload! # Notifications of the logged-in user
 		# # Tag
 		tagArtworks(tagname: String!, skip: Int, take: Int): ArtworksPaginatedPayload!
 		# # User
@@ -195,6 +195,12 @@ const typeDefs = `#graphql
 		notifier: User! # If followed, will link to the User's profile
 		isRead: Boolean!
 		notifiedOf: Notifiable! # Depends on the notification type	
+	}
+
+	type NotificationsPaginatedPayload {
+		notifications: [Notification!]!
+		hasMore: Boolean!
+		errors: [Error!]!
 	}
 
 	type Error {

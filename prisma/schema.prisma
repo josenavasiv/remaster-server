@@ -97,17 +97,17 @@ model Follow {
 
 model Notification {
   id   				Int              @id @default(autoincrement())
-  user_id           Int
-  notifier_id       Int
-  notification_type NotificationType
-  artwork_id        Int?
-  artwork           Artwork?         @relation(fields: [artwork_id], references: [id], onDelete: Cascade)
-  comment_id        Int?
-  comment           Comment?         @relation(fields: [comment_id], references: [id], onDelete: Cascade)
-  created_at        DateTime         @default(now())
-  is_read           Boolean          @default(false)
-  user              User             @relation("Notified", fields: [user_id], references: [id], onDelete: Cascade)
-  notifier          User             @relation("Notifier", fields: [notifier_id], references: [id])
+  userId            Int
+  notifierId        Int
+  notificationType  NotificationType
+  artworkId         Int?
+  artwork           Artwork?         @relation(fields: [artworkId], references: [id])
+  commentId         Int?
+  comment           Comment?         @relation(fields: [commentId], references: [id])
+  createdAt         DateTime          @default(now())
+  isRead            Boolean           @default(false)
+  user              User             @relation("Notified", fields: [userId], references: [id], onDelete: Cascade)
+  notifier          User             @relation("Notifier", fields: [notifierId], references: [id])
 }
 
 enum NotificationType {

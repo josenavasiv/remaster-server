@@ -4,22 +4,30 @@ import { PrismaClient, Prisma } from '@prisma/client';
 
 // req.session type
 declare module 'express-session' {
-	interface SessionData {
-		userID: number;
-	}
+    interface SessionData {
+        userID: number;
+    }
 }
 
 export interface Context {
-	req: Request;
-	res: Response;
-	prisma: PrismaClient<
-		Prisma.PrismaClientOptions,
-		never,
-		Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined
-	>;
-	redis: Redis;
+    req: Request;
+    res: Response;
+    prisma: PrismaClient<
+        Prisma.PrismaClientOptions,
+        never,
+        Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined
+    >;
+    redis: Redis;
 }
 
 export interface Error {
-	message: string;
+    message: string;
+}
+
+export enum NotificationType {
+    UPLOADED = 'UPLOADED',
+    FOLLOWED = 'FOLLOWED',
+    LIKED = 'LIKED',
+    COMMENTED = 'COMMENTED',
+    REPLIED = 'REPLIED',
 }

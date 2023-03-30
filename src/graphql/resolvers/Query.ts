@@ -1,5 +1,5 @@
 import { Context } from 'src/types.js';
-import { Artwork, Tag } from '@prisma/client';
+import { Artwork, Tag, Notification } from '@prisma/client';
 import { ArtworkPayloadType } from './mutation/artwork';
 import { UserPayloadType } from './mutation/user';
 
@@ -22,13 +22,26 @@ interface PaginatedArtworksPayloadType {
 
 interface TagArtworksArgs {
     // tagID: string;
-	take?: number;
-	skip?: number;
+    take?: number;
+    skip?: number;
     tagname: string;
 }
 
 interface TagsPayload {
     tags: Tag[];
+    errors: {
+        message: string;
+    }[];
+}
+
+interface NotificationsArgs {
+    skip?: number;
+    take?: number;
+}
+
+interface NotificationsPaginatedPayloadType {
+    notifications: Notification[];
+    hasMore: boolean;
     errors: {
         message: string;
     }[];
@@ -64,6 +77,42 @@ const Query = {
         } catch (error) {
             return {
                 artwork: null,
+                errors: [{ message: 'Server Error' }],
+            };
+        }
+    },
+    notifications: async (
+        _parent: any,
+        { skip, take }: NotificationsArgs,
+        { req, prisma }: Context
+    ): Promise<NotificationsPaginatedPayloadType> => {
+        if (!req.session.userID) {
+            return {
+                notifications: [],
+                hasMore: false,
+                errors: [],
+            };
+        }
+
+        try {
+            const notifications = await prisma.notification.findMany({
+                where: {
+                    userId: Number(req.session.userID),
+                },
+                skip: skip ?? 0,
+                take: take ?? 10,
+                orderBy: [{ createdAt: 'desc' }],
+            });
+
+            return {
+                notifications: notifications ?? [],
+                hasMore: notifications?.length === (take ?? 10),
+                errors: [],
+            };
+        } catch (error) {
+            return {
+                notifications: [],
+                hasMore: false,
                 errors: [{ message: 'Server Error' }],
             };
         }

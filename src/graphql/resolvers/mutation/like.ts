@@ -63,16 +63,18 @@ export const like = {
                 },
             });
 
-            await prisma.artwork.update({
-                where: {
-                    id: Number(artworkID),
-                },
-                data: {
-                    likesCount: {
-                        increment: 1,
-                    },
-                },
-            });
+            // const updatedArtwork = await prisma.artwork.update({
+            //     where: {
+            //         id: Number(artworkID),
+            //     },
+            //     data: {
+            //         likesCount: {
+            //             increment: 1,
+            //         },
+            //     },
+            // });
+
+            // HERE CREATE A NEW NOTIFICATION FOR THE UPLOADER OF THE ARTWORK
 
             return {
                 like: newLike,
