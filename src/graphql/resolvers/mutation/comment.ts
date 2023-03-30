@@ -1,202 +1,247 @@
 import { Context } from '../../../types.js';
-import { Comment } from '@prisma/client';
+import { Comment, NotificationType } from '@prisma/client';
 import validator from 'validator';
 
 interface CommentCreateArgs {
-	artworkID: string;
-	comment: string;
+    artworkID: string;
+    comment: string;
 }
 
 interface CommentReplyArgs extends CommentCreateArgs {
-	parentCommentID: string;
+    parentCommentID: string;
 }
 
 export interface CommentPayloadType {
-	comment: Comment | null;
-	errors: {
-		message: string;
-	}[];
+    comment: Comment | null;
+    errors: {
+        message: string;
+    }[];
 }
 
 export const comment = {
-	commentCreate: async (
-		_parent: any,
-		{ artworkID, comment }: CommentCreateArgs,
-		{ req, prisma }: Context
-	): Promise<CommentPayloadType> => {
-		// User is required to be logged-in
-		if (!req.session.userID) {
-			throw new Error('Not Authenticated');
-		}
+    commentCreate: async (
+        _parent: any,
+        { artworkID, comment }: CommentCreateArgs,
+        { req, prisma }: Context
+    ): Promise<CommentPayloadType> => {
+        // User is required to be logged-in
+        if (!req.session.userID) {
+            throw new Error('Not Authenticated');
+        }
 
-		const validComment = validator.isLength(comment, { min: 1, max: 100 });
+        const validComment = validator.isLength(comment, { min: 1, max: 100 });
 
-		if (!validComment) {
-			return {
-				comment: null,
-				errors: [{ message: 'Comment must be between 1 and 100 characters' }],
-			};
-		}
+        if (!validComment) {
+            return {
+                comment: null,
+                errors: [{ message: 'Comment must be between 1 and 100 characters' }],
+            };
+        }
 
-		try {
-			const createdComment = await prisma.comment.create({
-				data: {
-					commenterId: req.session.userID,
-					comment,
-					artworkId: Number(artworkID),
-					likesCount: 0,
-				},
-			});
+        try {
+            const createdComment = await prisma.comment.create({
+                data: {
+                    commenterId: req.session.userID,
+                    comment,
+                    artworkId: Number(artworkID),
+                    likesCount: 0,
+                },
+                // Notify the uploader of the comment posted (Could pass in uploaderID instead)
+                include: {
+                    artwork: {
+                        select: {
+                            uploaderID: true,
+                        },
+                    },
+                },
+            });
 
-			return {
-				comment: createdComment,
-				errors: [],
-			};
-		} catch (error: any) {
-			console.log(error);
+            if (createdComment.artwork.uploaderID !== req.session.userID) {
+                // HERE CREATE A NEW NOTIFICATION FOR THE UPLOADER OF THE ARTWORK
+                await prisma.notification.create({
+                    data: {
+                        userId: createdComment.artwork.uploaderID,
+                        notificationType: NotificationType.COMMENTED,
+                        notifierId: req.session.userID,
+                        artworkId: Number(artworkID),
+                        notifierCommentId: createdComment.id,
+                    },
+                });
+            }
 
-			return {
-				comment: null,
-				errors: [{ message: 'Server Error' }],
-			};
-		}
-	},
-	commentUpdate: async (
-		_parent: any,
-		{ commentID, comment }: { commentID: string; comment: string },
-		{ req, prisma }: Context
-	): Promise<CommentPayloadType> => {
-		// User is required to be logged-in
-		if (!req.session.userID) {
-			throw new Error('Not Authenticated');
-		}
+            return {
+                comment: createdComment,
+                errors: [],
+            };
+        } catch (error: any) {
+            console.log(error);
 
-		try {
-			const commentExists = await prisma.comment.findUnique({
-				where: {
-					id: Number(commentID),
-				},
-			});
+            return {
+                comment: null,
+                errors: [{ message: 'Server Error' }],
+            };
+        }
+    },
+    commentUpdate: async (
+        _parent: any,
+        { commentID, comment }: { commentID: string; comment: string },
+        { req, prisma }: Context
+    ): Promise<CommentPayloadType> => {
+        // User is required to be logged-in
+        if (!req.session.userID) {
+            throw new Error('Not Authenticated');
+        }
 
-			if (!commentExists) {
-				return {
-					comment: null,
-					errors: [{ message: 'Comment does not exist' }],
-				};
-			}
+        try {
+            const commentExists = await prisma.comment.findUnique({
+                where: {
+                    id: Number(commentID),
+                },
+            });
 
-			if (req.session.userID !== commentExists.commenterId) {
-				throw new Error('Unauthorized');
-			}
+            if (!commentExists) {
+                return {
+                    comment: null,
+                    errors: [{ message: 'Comment does not exist' }],
+                };
+            }
 
-			const validComment = validator.isLength(comment, { min: 1, max: 100 });
+            if (req.session.userID !== commentExists.commenterId) {
+                throw new Error('Unauthorized');
+            }
 
-			if (!validComment) {
-				return {
-					comment: null,
-					errors: [{ message: 'Comment must be between 1 and 100 characters' }],
-				};
-			}
+            const validComment = validator.isLength(comment, { min: 1, max: 100 });
 
-			const updatedComment = await prisma.comment.update({
-				where: {
-					id: Number(commentID),
-				},
-				data: {
-					comment,
-				},
-			});
+            if (!validComment) {
+                return {
+                    comment: null,
+                    errors: [{ message: 'Comment must be between 1 and 100 characters' }],
+                };
+            }
 
-			return {
-				comment: updatedComment,
-				errors: [],
-			};
-		} catch (error) {
-			throw new Error('Server error');
-		}
-	},
-	commentDelete: async (
-		_parent: any,
-		{ commentID }: { commentID: string },
-		{ req, prisma }: Context
-	): Promise<CommentPayloadType> => {
-		// User is required to be logged-in
-		if (!req.session.userID) {
-			throw new Error('Not Authenticated');
-		}
+            const updatedComment = await prisma.comment.update({
+                where: {
+                    id: Number(commentID),
+                },
+                data: {
+                    comment,
+                },
+            });
 
-		try {
-			const commentExists = await prisma.comment.findUnique({
-				where: {
-					id: Number(commentID),
-				},
-			});
+            return {
+                comment: updatedComment,
+                errors: [],
+            };
+        } catch (error) {
+            throw new Error('Server error');
+        }
+    },
+    commentDelete: async (
+        _parent: any,
+        { commentID }: { commentID: string },
+        { req, prisma }: Context
+    ): Promise<CommentPayloadType> => {
+        // User is required to be logged-in
+        if (!req.session.userID) {
+            throw new Error('Not Authenticated');
+        }
 
-			if (!commentExists) {
-				return {
-					comment: null,
-					errors: [{ message: 'Comment does not exist' }],
-				};
-			}
+        try {
+            const commentExists = await prisma.comment.findUnique({
+                where: {
+                    id: Number(commentID),
+                },
+            });
 
-			if (req.session.userID !== commentExists.commenterId) {
-				throw new Error('Unauthorized');
-			}
+            if (!commentExists) {
+                return {
+                    comment: null,
+                    errors: [{ message: 'Comment does not exist' }],
+                };
+            }
 
-			const deletedComment = await prisma.comment.delete({
-				where: {
-					id: Number(commentID),
-				},
-			});
+            if (req.session.userID !== commentExists.commenterId) {
+                throw new Error('Unauthorized');
+            }
 
-			return {
-				comment: deletedComment,
-				errors: [],
-			};
-		} catch (error) {
-			throw new Error('Server error');
-		}
-	},
-	commentReply: async (
-		_parent: any,
-		{ artworkID, comment, parentCommentID }: CommentReplyArgs,
-		{ req, prisma }: Context
-	): Promise<CommentPayloadType> => {
-		// User is required to be logged-in
-		if (!req.session.userID) {
-			throw new Error('Not Authenticated');
-		}
+            const deletedComment = await prisma.comment.delete({
+                where: {
+                    id: Number(commentID),
+                },
+            });
 
-		const validReply = validator.isLength(comment, { min: 1, max: 100 });
+            return {
+                comment: deletedComment,
+                errors: [],
+            };
+        } catch (error) {
+            throw new Error('Server error');
+        }
+    },
+    commentReply: async (
+        _parent: any,
+        { artworkID, comment, parentCommentID }: CommentReplyArgs,
+        { req, prisma }: Context
+    ): Promise<CommentPayloadType> => {
+        // User is required to be logged-in
+        if (!req.session.userID) {
+            throw new Error('Not Authenticated');
+        }
 
-		if (!validReply) {
-			return {
-				comment: null,
-				errors: [{ message: 'Comment must be between 1 and 100 characters' }],
-			};
-		}
+        const validReply = validator.isLength(comment, { min: 1, max: 100 });
 
-		try {
-			const createdReply = await prisma.comment.create({
-				data: {
-					commenterId: req.session.userID,
-					comment,
-					artworkId: Number(artworkID),
-					parentCommentId: Number(parentCommentID),
-					likesCount: 0,
-				},
-			});
+        if (!validReply) {
+            return {
+                comment: null,
+                errors: [{ message: 'Comment must be between 1 and 100 characters' }],
+            };
+        }
 
-			return {
-				comment: createdReply,
-				errors: [],
-			};
-		} catch (error: any) {
-			console.log(error);
-			return {
-				comment: null,
-				errors: [{ message: 'Server Error' }],
-			};
-		}
-	},
+        try {
+            const createdReply = await prisma.comment.create({
+                data: {
+                    commenterId: req.session.userID,
+                    comment,
+                    artworkId: Number(artworkID),
+                    parentCommentId: Number(parentCommentID),
+                    likesCount: 0,
+                },
+                // Notify the uploader of the comment posted (Could pass in uploaderID instead)
+                include: {
+                    artwork: {
+                        select: {
+                            uploaderID: true,
+                        },
+                    },
+                },
+            });
+
+            // NO NOTIFICATION ON USER REPLYING ON OWN COMMENT
+            // NEED TO PASS IN USER'S ID THAT WE ARE REPLYING TO
+            // if (createdReply.parentComment?.commenterId !== req.session.userID) {
+            //     // HERE CREATE A NEW NOTIFICATION FOR THE UPLOADER OF THE ARTWORK
+            //     await prisma.notification.create({
+            //         data: {
+            //             userId: createdReply.artwork.uploaderID,
+            //             notificationType: NotificationType.REPLIED,
+            //             notifierId: req.session.userID,
+            //             artworkId: Number(artworkID),
+            //             commentId: createdReply.parentCommentId,
+            //             notifierCommentId: createdReply.id,
+            //         },
+            //     });
+            // }
+
+            return {
+                comment: createdReply,
+                errors: [],
+            };
+        } catch (error: any) {
+            console.log(error);
+            return {
+                comment: null,
+                errors: [{ message: 'Server Error' }],
+            };
+        }
+    },
 };

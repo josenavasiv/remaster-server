@@ -187,14 +187,16 @@ const typeDefs = `#graphql
 		UPLOADED, FOLLOWED, LIKED, COMMENTED, REPLIED, TAGGED
 	}
 
-	union Notifiable = Artwork | User | Comment
-
 	type Notification implements Node {
 		id: ID!
-		type: NotificationType!
-		notifier: User! # If followed, will link to the User's profile
+		artwork: Artwork
+		comment: Comment
 		isRead: Boolean!
-		notifiedOf: Notifiable! # Depends on the notification type	
+		createdAt: String!
+		notificationType: NotificationType!
+		notifier: User! # If followed, will link to the User's profile
+		notifierArtwork: Artwork
+		notifierComment: Comment
 	}
 
 	type NotificationsPaginatedPayload {

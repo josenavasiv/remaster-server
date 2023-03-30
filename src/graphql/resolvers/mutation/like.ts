@@ -1,5 +1,5 @@
 import { Context } from '../../../types.js';
-import { Like } from '@prisma/client';
+import { Like, NotificationType } from '@prisma/client';
 
 interface LikeArtworkCreateArgs {
     artworkID: string;
@@ -63,18 +63,30 @@ export const like = {
                 },
             });
 
-            // const updatedArtwork = await prisma.artwork.update({
-            //     where: {
-            //         id: Number(artworkID),
-            //     },
-            //     data: {
-            //         likesCount: {
-            //             increment: 1,
-            //         },
-            //     },
-            // });
+            const updatedArtwork = await prisma.artwork.update({
+                where: {
+                    id: Number(artworkID),
+                },
+                data: {
+                    likesCount: {
+                        increment: 1,
+                    },
+                },
+            });
 
-            // HERE CREATE A NEW NOTIFICATION FOR THE UPLOADER OF THE ARTWORK
+            if (updatedArtwork.uploaderID !== req.session.userID) {
+                // HERE CREATE A NEW NOTIFICATION FOR THE UPLOADER OF THE ARTWORK
+                await prisma.notification.create({
+                    data: {
+                        userId: updatedArtwork.uploaderID,
+                        notificationType: NotificationType.LIKED,
+                        notifierId: req.session.userID,
+                        artworkId: updatedArtwork.id,
+                    },
+                });
+            }
+
+            // HERE WOULD PUBLISH THE NOTIFICATION AND SEND THE CREATED NOTIFICATION
 
             return {
                 like: newLike,
@@ -163,7 +175,7 @@ export const like = {
                 },
             });
 
-            await prisma.comment.update({
+            const likedComment = await prisma.comment.update({
                 where: {
                     id: Number(commentID),
                 },
@@ -173,6 +185,18 @@ export const like = {
                     },
                 },
             });
+
+            if (likedComment.commenterId !== req.session.userID) {
+                // HERE CREATE A NEW NOTIFICATION FOR THE UPLOADER OF THE COMMENT
+                await prisma.notification.create({
+                    data: {
+                        userId: likedComment.commenterId,
+                        notificationType: NotificationType.LIKED,
+                        notifierId: req.session.userID,
+                        commentId: likedComment.id,
+                    },
+                });
+            }
 
             return {
                 like: newLike,

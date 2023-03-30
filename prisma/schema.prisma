@@ -21,7 +21,7 @@ model User {
   followers     Follow[]       @relation("Follower")
   following     Follow[]       @relation("Following")
   followedTags  Tag[]
-  notifications Notification[] @relation("Notified")
+  notifications Notification[] 
   notified      Notification[] @relation("Notifier")
   comments      Comment[]
   likes         Like[]
@@ -35,20 +35,21 @@ model Tag {
 }
 
 model Artwork {
-  id  Int      	 	   @id @default(autoincrement())
-  uploaderID  Int
-  uploader    User     @relation(fields: [uploaderID], references: [id], onDelete: Cascade)
-  imageUrls   String[]
-  title       String
-  description String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  likesCount  Int
+  id  			Int      	 	   @id @default(autoincrement())
+  uploaderID 	Int
+  uploader    	User     @relation(fields: [uploaderID], references: [id], onDelete: Cascade)
+  imageUrls   	String[]
+  title       	String
+  description 	String
+  createdAt   	DateTime @default(now())
+  updatedAt   	DateTime @updatedAt
+  likesCount  	Int
 
   comments      Comment[]
   likes         Like[]
   tags          Tag[]
   notifications Notification[]
+  notifierArtworks Notification[] @relation("Notifier")
 }
 
 model Comment {
@@ -66,6 +67,7 @@ model Comment {
   likesCount        Int            @default(0)
   likes             Like[]
   notifications     Notification[]
+  notifierComments  Notification[] @relation("Notifier")
 }
 
 enum LikeableType {
@@ -97,17 +99,23 @@ model Follow {
 
 model Notification {
   id   				Int              @id @default(autoincrement())
-  userId            Int
-  notifierId        Int
   notificationType  NotificationType
+  createdAt         DateTime         @default(now())
+  isRead            Boolean          @default(false)
+
+  userId            Int
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   artworkId         Int?
   artwork           Artwork?         @relation(fields: [artworkId], references: [id])
   commentId         Int?
   comment           Comment?         @relation(fields: [commentId], references: [id])
-  createdAt         DateTime          @default(now())
-  isRead            Boolean           @default(false)
-  user              User             @relation("Notified", fields: [userId], references: [id], onDelete: Cascade)
+
+  notifierId        Int
   notifier          User             @relation("Notifier", fields: [notifierId], references: [id])
+  notifierArtworkId Int?
+  notifierArtwork   Artwork?         @relation("Notifier", fields: [notifierArtworkId], references: [id])
+  notifierCommentId Int?
+  notifierComment   Comment?         @relation("Notifier", fields: [notifierCommentId], references: [id])
 }
 
 enum NotificationType {

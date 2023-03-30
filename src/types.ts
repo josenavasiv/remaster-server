@@ -23,11 +23,3 @@ export interface Context {
 export interface Error {
     message: string;
 }
-
-export enum NotificationType {
-    UPLOADED = 'UPLOADED',
-    FOLLOWED = 'FOLLOWED',
-    LIKED = 'LIKED',
-    COMMENTED = 'COMMENTED',
-    REPLIED = 'REPLIED',
-}
