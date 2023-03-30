@@ -41,7 +41,6 @@ const typeDefs = `#graphql
 		likeArtworkDelete(likeID: ID!, artworkID: ID!): LikePayload!
 		likeCommentCreate(commentID: ID!): LikePayload!
 		likeCommentDelete(likeID: ID!, commentID: ID!): LikePayload!
-		# likeComment(commentID: ID!):
 		# # Notification
 		# # Tag
 		# # User
@@ -52,9 +51,9 @@ const typeDefs = `#graphql
 		# userChangePassword():
 	}
 
-	# type Subscription {
-	# 	notifyUser: NotificationPayload!
-	# }
+	type Subscription {
+		newNotification: NotificationPayload!
+	}
 
 	interface Node { # Node tells that the object the implements Node is persisted and retrieva
 		id: ID!
@@ -202,6 +201,11 @@ const typeDefs = `#graphql
 	type NotificationsPaginatedPayload {
 		notifications: [Notification!]!
 		hasMore: Boolean!
+		errors: [Error!]!
+	}
+
+	type NotificationPayload {
+		notification: Notification
 		errors: [Error!]!
 	}
 
