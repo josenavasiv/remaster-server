@@ -42,6 +42,7 @@ const typeDefs = `#graphql
 		likeCommentCreate(commentID: ID!): LikePayload!
 		likeCommentDelete(likeID: ID!, commentID: ID!): LikePayload!
 		# # Notification
+		notificationMarkAsRead(notificationID: ID!): NotificationPayload!
 		# # Tag
 		# # User
 		userRegister(username: String!, email: String!, password: String!, avatarUrl: String): UserPayload!
