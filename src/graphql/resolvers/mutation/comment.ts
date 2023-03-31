@@ -9,6 +9,8 @@ interface CommentCreateArgs {
 
 interface CommentReplyArgs extends CommentCreateArgs {
     parentCommentID: string;
+    replyingToUserID?: string;
+    replyingToCommentID?: string;
 }
 
 export interface CommentPayloadType {
@@ -22,7 +24,7 @@ export const comment = {
     commentCreate: async (
         _parent: any,
         { artworkID, comment }: CommentCreateArgs,
-        { req, prisma }: Context
+        { req, prisma, pubsub }: Context
     ): Promise<CommentPayloadType> => {
         // User is required to be logged-in
         if (!req.session.userID) {
@@ -58,7 +60,7 @@ export const comment = {
 
             if (createdComment.artwork.uploaderID !== req.session.userID) {
                 // HERE CREATE A NEW NOTIFICATION FOR THE UPLOADER OF THE ARTWORK
-                await prisma.notification.create({
+                const newNotification = await prisma.notification.create({
                     data: {
                         userId: createdComment.artwork.uploaderID,
                         notificationType: NotificationType.COMMENTED,
@@ -67,6 +69,7 @@ export const comment = {
                         notifierCommentId: createdComment.id,
                     },
                 });
+                pubsub.publish('NEW_NOTIFICATION', { newNotification });
             }
 
             return {
@@ -180,8 +183,8 @@ export const comment = {
     },
     commentReply: async (
         _parent: any,
-        { artworkID, comment, parentCommentID }: CommentReplyArgs,
-        { req, prisma }: Context
+        { artworkID, comment, parentCommentID, replyingToUserID, replyingToCommentID }: CommentReplyArgs,
+        { req, prisma, pubsub }: Context
     ): Promise<CommentPayloadType> => {
         // User is required to be logged-in
         if (!req.session.userID) {
@@ -206,31 +209,25 @@ export const comment = {
                     parentCommentId: Number(parentCommentID),
                     likesCount: 0,
                 },
-                // Notify the uploader of the comment posted (Could pass in uploaderID instead)
-                include: {
-                    artwork: {
-                        select: {
-                            uploaderID: true,
-                        },
-                    },
-                },
             });
 
             // NO NOTIFICATION ON USER REPLYING ON OWN COMMENT
             // NEED TO PASS IN USER'S ID THAT WE ARE REPLYING TO
-            // if (createdReply.parentComment?.commenterId !== req.session.userID) {
-            //     // HERE CREATE A NEW NOTIFICATION FOR THE UPLOADER OF THE ARTWORK
-            //     await prisma.notification.create({
-            //         data: {
-            //             userId: createdReply.artwork.uploaderID,
-            //             notificationType: NotificationType.REPLIED,
-            //             notifierId: req.session.userID,
-            //             artworkId: Number(artworkID),
-            //             commentId: createdReply.parentCommentId,
-            //             notifierCommentId: createdReply.id,
-            //         },
-            //     });
-            // }
+            if (Number(replyingToUserID) !== req.session.userID) {
+                // HERE CREATE A NEW NOTIFICATION FOR THE UPLOADER OF THE ARTWORK
+                const newNotification = await prisma.notification.create({
+                    data: {
+                        userId: Number(replyingToUserID),
+                        notificationType: NotificationType.REPLIED,
+                        notifierId: req.session.userID,
+                        artworkId: Number(artworkID),
+                        commentId: Number(replyingToCommentID),
+                        notifierCommentId: createdReply.id,
+                    },
+                });
+
+                pubsub.publish('NEW_NOTIFICATION', { newNotification });
+            }
 
             return {
                 comment: createdReply,

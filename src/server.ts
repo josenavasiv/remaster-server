@@ -6,7 +6,7 @@ import bodyParser from 'body-parser';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
-import { Context } from 'src/types.js';
+import { Context } from './types.js';
 
 // Prisma Client Instance -> Connects to PostreSQL Server
 import { PrismaClient } from '@prisma/client';
@@ -23,6 +23,17 @@ import typeDefs from './graphql/schema.js';
 import resolvers from './graphql/resolvers/index.js';
 import { COOKIE_NAME, __prod__ } from './lib/constants.js';
 
+// Web Socket
+import { makeExecutableSchema } from '@graphql-tools/schema';
+import { WebSocketServer } from 'ws';
+import { useServer } from 'graphql-ws/lib/use/ws';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
+export const pubsub = new RedisPubSub({
+    publisher: new Redis(parseInt(process.env.REDIS_PORT as string)),
+    subscriber: new Redis(parseInt(process.env.REDIS_PORT as string)),
+});
+import cookie from 'cookie';
+
 // Server Object
 let connection: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>;
 
@@ -32,11 +43,42 @@ import storageRouter from './controllers/storage.js';
 export const startServer = async () => {
     const app = express();
     const httpServer = http.createServer(app);
-    const apolloServer = new ApolloServer<Context>({
-        typeDefs,
-        resolvers,
-        plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+    const schema = makeExecutableSchema({ typeDefs, resolvers });
+    const wsServer = new WebSocketServer({
+        server: httpServer,
+        path: '/graphql',
     });
+    const serverCleanup = useServer(
+        {
+            schema,
+            context: async (_ctx, _msg, _args) => {
+                if (_ctx.extra.request.headers.cookie?.includes('qid')) {
+                    const cookies = cookie.parse(_ctx.extra.request.headers.cookie);
+                    const session = await redis.get(`sess:${cookies.qid.slice(2, 34)}`);
+                    const sessionjson = await JSON.parse(session!);
+                    return { userID: sessionjson.userID };
+                }
+                return { userID: null };
+            },
+        },
+        wsServer
+    );
+    const apolloServer = new ApolloServer<Context>({
+        schema,
+        plugins: [
+            ApolloServerPluginDrainHttpServer({ httpServer }),
+            {
+                async serverWillStart() {
+                    return {
+                        async drainServer() {
+                            await serverCleanup.dispose();
+                        },
+                    };
+                },
+            },
+        ],
+    });
+
     await apolloServer.start();
 
     // if (redis.status !== 'connecting') {
@@ -79,6 +121,7 @@ export const startServer = async () => {
                 res,
                 prisma,
                 redis,
+                pubsub,
             }),
         })
     );

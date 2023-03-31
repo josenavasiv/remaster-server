@@ -32,7 +32,7 @@ const typeDefs = `#graphql
 		commentCreate(artworkID: ID!, comment: String!): CommentPayload!
 		commentUpdate(commentID: ID!, comment: String!): CommentPayload!
 		commentDelete(commentID: ID!): CommentPayload!
-		commentReply(artworkID: ID!, comment: String!, parentCommentID: ID!): CommentPayload!
+		commentReply(artworkID: ID!, comment: String!, parentCommentID: ID!, replyingToUserID: ID, replyingToCommentID: ID): CommentPayload!
 		# # Follow
 		# followUser(userID: ID!):
 		# followTag(tagname: String!):
@@ -52,7 +52,7 @@ const typeDefs = `#graphql
 	}
 
 	type Subscription {
-		newNotification: NotificationPayload!
+		newNotification: Notification!
 	}
 
 	interface Node { # Node tells that the object the implements Node is persisted and retrieva

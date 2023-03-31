@@ -1,5 +1,6 @@
 import { Context } from '../../../types.js';
 import { Like, NotificationType } from '@prisma/client';
+import { pubsub } from '../../../server.js';
 
 interface LikeArtworkCreateArgs {
     artworkID: string;
@@ -76,7 +77,7 @@ export const like = {
 
             if (updatedArtwork.uploaderID !== req.session.userID) {
                 // HERE CREATE A NEW NOTIFICATION FOR THE UPLOADER OF THE ARTWORK
-                await prisma.notification.create({
+                const newNotification = await prisma.notification.create({
                     data: {
                         userId: updatedArtwork.uploaderID,
                         notificationType: NotificationType.LIKED,
@@ -84,6 +85,7 @@ export const like = {
                         artworkId: updatedArtwork.id,
                     },
                 });
+                pubsub.publish('NEW_NOTIFICATION', { newNotification });
             }
 
             // HERE WOULD PUBLISH THE NOTIFICATION AND SEND THE CREATED NOTIFICATION
@@ -188,7 +190,7 @@ export const like = {
 
             if (likedComment.commenterId !== req.session.userID) {
                 // HERE CREATE A NEW NOTIFICATION FOR THE UPLOADER OF THE COMMENT
-                await prisma.notification.create({
+                const newNotification = await prisma.notification.create({
                     data: {
                         userId: likedComment.commenterId,
                         notificationType: NotificationType.LIKED,
@@ -196,6 +198,7 @@ export const like = {
                         commentId: likedComment.id,
                     },
                 });
+                pubsub.publish('NEW_NOTIFICATION', { newNotification });
             }
 
             return {
