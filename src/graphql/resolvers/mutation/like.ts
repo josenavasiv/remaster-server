@@ -196,6 +196,7 @@ export const like = {
                         notificationType: NotificationType.LIKED,
                         notifierId: req.session.userID,
                         commentId: likedComment.id,
+                        artworkId: likedComment.artworkId,
                     },
                 });
                 pubsub.publish('NEW_NOTIFICATION', { newNotification });

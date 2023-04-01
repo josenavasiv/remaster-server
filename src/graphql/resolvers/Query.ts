@@ -12,6 +12,11 @@ interface UserFeedArgs {
     cursor?: number;
 }
 
+interface UserLikesArgs extends UserArgs {
+    skip?: number;
+    take?: number;
+}
+
 interface PaginatedArtworksPayloadType {
     artworks: Artwork[];
     hasMore: boolean;
@@ -265,6 +270,60 @@ const Query = {
         } catch (error) {
             return {
                 tags: [],
+                errors: [{ message: 'Server Error' }],
+            };
+        }
+    },
+    userLikes: async (
+        _parent: any,
+        { username, take, skip }: UserLikesArgs,
+        { prisma }: Context
+    ): Promise<PaginatedArtworksPayloadType> => {
+        try {
+            const likedArtworks = await prisma.user.findUnique({
+                where: {
+                    username: username,
+                },
+                select: {
+                    likes: {
+                        where: {
+                            artworkId: {
+                                not: null,
+                            },
+                        },
+                        select: {
+                            artwork: true,
+                        },
+                        skip: skip ?? 0,
+                        take: take ?? 10,
+                        orderBy: [{ createdAt: 'desc' }],
+                    },
+                },
+            });
+
+			// Extract each artwork object
+            let artworks: Artwork[] = [];
+            likedArtworks?.likes.forEach((like) => {
+                artworks.push(like.artwork!);
+            });
+
+            if (!likedArtworks) {
+                return {
+                    artworks: [],
+                    hasMore: false,
+                    errors: [],
+                };
+            }
+
+            return {
+                artworks,
+                hasMore: likedArtworks.likes.length === (take ?? 10),
+                errors: [],
+            };
+        } catch (error) {
+            return {
+                artworks: [],
+                hasMore: false,
                 errors: [{ message: 'Server Error' }],
             };
         }
