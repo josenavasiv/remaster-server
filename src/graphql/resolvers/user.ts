@@ -1,5 +1,5 @@
 import { Context } from 'src/types';
-import { User, Artwork, Like, Follow } from '@prisma/client';
+import { User, Artwork, Follow } from '@prisma/client';
 
 const User = {
     // Eventually this will be paginated
@@ -37,54 +37,25 @@ const User = {
 
         return follow;
     },
-    likes: async ({ id }: User, _args: any, { prisma }: Context): Promise<Like[]> => {
-        const likes = await prisma.user.findUnique({
-            where: {
-                id,
-            },
-            select: {
-                likes: {
-                    orderBy: [{ createdAt: 'desc' }],
-                },
-            },
-        });
+    // Returns the artworks that the user likes
+    // likes: async ({ id }: User, _args: any, { prisma }: Context): Promise<Like[]> => {
+    //     const likes = await prisma.user.findUnique({
+    //         where: {
+    //             id,
+    //         },
+    //         select: {
+    //             likes: {
+    //                 orderBy: [{ createdAt: 'desc' }],
+    //             },
+    //         },
+    //     });
 
-        if (!likes?.likes) {
-            return [];
-        }
+    //     if (!likes?.likes) {
+    //         return [];
+    //     }
 
-        return likes.likes;
-    },
-    // Fetch the artworks that the user likes
-    likedArtworks: async ({ id }: User, _args: any, { prisma }: Context): Promise<Artwork[]> => {
-        const likedArtworks = await prisma.user.findUnique({
-            where: {
-                id,
-            },
-            select: {
-                likes: {
-                    include: {
-                        artwork: true,
-                    },
-                    where: {
-                        likeableType: 'ARTWORK',
-                    },
-                    orderBy: [{ createdAt: 'desc' }],
-                },
-            },
-        });
-
-        if (!likedArtworks?.likes) {
-            return [];
-        }
-
-        const extractedArtworks: Artwork[] = [];
-        for (const obj of likedArtworks.likes) {
-            extractedArtworks.push(obj.artwork!);
-        }
-
-        return extractedArtworks;
-    },
+    //     return likes.likes;
+    // },
 };
 
 export default User;

@@ -37,8 +37,10 @@ const typeDefs = `#graphql
 		commentDelete(commentID: ID!): CommentPayload!
 		commentReply(artworkID: ID!, comment: String!, parentCommentID: ID!, replyingToUserID: ID, replyingToCommentID: ID): CommentPayload!
 		# # Follow
-		# followUser(userID: ID!):
-		# followTag(tagname: String!):
+		followUserCreate(userID: ID!): FollowPayload!
+		followUserDelete(userID: ID!): FollowPayload!
+		# followTagCreate(tagname: String!):
+		# followTagDelete(tagname: String!):
 		# # Likes
 		likeArtworkCreate(artworkID: ID!): LikePayload!
 		likeArtworkDelete(likeID: ID!, artworkID: ID!): LikePayload!
@@ -68,16 +70,16 @@ const typeDefs = `#graphql
 		email: String!
 		username: String!
 		avatarUrl: String!
-		artworks: [Artwork!]!
-		# artworks(limit: Int!, cursor: Int): UserArtworksPaginatedPayload!
-		followers: [User!]! # Where the User is the Following (MAY NOT NEED)
-		following: [User!]! # Where the User is the Follower (MAY NOT NEED)
-		followedTags: [Tag!]! # Tags are their own seperate thing -> In the Database, its just a bunch of strings
-		notifications: [Notification!]!
-		# notifications(limit: Int!, cursor: Int): UsernotificationsPaginatedPayload!
-		likes: [Like!]!
-		likedArtworks: [Artwork!]! # (MAY NOT NEED)
+		artworks: [Artwork!]! # artworks(limit: Int!, cursor: Int): UserArtworksPaginatedPayload!
+		notifications: [Notification!]! # notifications(limit: Int!, cursor: Int): UsernotificationsPaginatedPayload!
 		isFollowedByLoggedInUser: Follow
+		
+		# May Not Need These At All
+		# likes: [Artwork!]!
+		# followers: [User!]! # Where the User is the Following (MAY NOT NEED)
+		# following: [User!]! # Where the User is the Follower (MAY NOT NEED)
+		# followedTags: [Tag!]! # Tags are their own seperate thing -> In the Database, its just a bunch of strings
+		
 	}
 
 	type UserPayload {
