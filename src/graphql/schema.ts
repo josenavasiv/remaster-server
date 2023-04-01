@@ -20,7 +20,9 @@ const typeDefs = `#graphql
 		userExplore(limit: Int, cursor: Int): ArtworksPaginatedPayload! # Apply Explore Algorithm For Logged-In User Here PAGINATION
 		userExploreTags: TagsPayload!
 		userFeed(limit: Int, cursor: Int): ArtworksPaginatedPayload! # Gets the main feed for the logged-in user's feed (Apply Main Feed & Suggested Posts Algorithm Here) (PAGINATION)
-		userLikes(username: String!, skip: Int, take: Int): ArtworksPaginatedPayload! # Gets the main feed for the logged-in user's feed (Apply Main Feed & Suggested Posts Algorithm Here) (PAGINATION)
+		userLikes(username: String!, skip: Int, take: Int): ArtworksPaginatedPayload!
+		userFollowers(username: String!, skip: Int, take: Int): UsersPaginatedPayload! 
+		userFollowings(username: String!, skip: Int, take: Int): UsersPaginatedPayload! 
 		# userSuggestedUsers(): # Component will fetch suggested users (For now randomly pick follows of follows)
 	}
 
@@ -68,18 +70,24 @@ const typeDefs = `#graphql
 		avatarUrl: String!
 		artworks: [Artwork!]!
 		# artworks(limit: Int!, cursor: Int): UserArtworksPaginatedPayload!
-		followers: [Follow!]! # Where the User is the Following
-		following: [Follow!]! # Where the User is the Follower
+		followers: [User!]! # Where the User is the Following (MAY NOT NEED)
+		following: [User!]! # Where the User is the Follower (MAY NOT NEED)
 		followedTags: [Tag!]! # Tags are their own seperate thing -> In the Database, its just a bunch of strings
 		notifications: [Notification!]!
 		# notifications(limit: Int!, cursor: Int): UsernotificationsPaginatedPayload!
 		likes: [Like!]!
-		likedArtworks: [Artwork!]!
-		isFollowedByLoggedInUser: Boolean
+		likedArtworks: [Artwork!]! # (MAY NOT NEED)
+		isFollowedByLoggedInUser: Follow
 	}
 
 	type UserPayload {
 		user: User # Needs to be nullable since when an error occurs -> No user is returned
+		errors: [Error!]!
+	}
+
+	type UsersPaginatedPayload {
+		users: [User!]!
+		hasMore: Boolean!
 		errors: [Error!]!
 	}
 
@@ -169,7 +177,6 @@ const typeDefs = `#graphql
 		createdAt: String!
 		updatedAt: String!
 		likesCount: Int!
-		# isLikedByLoggedInUser: Boolean
 		isLikedByLoggedInUser: Like
 	}
 
@@ -179,9 +186,13 @@ const typeDefs = `#graphql
 	}
 
 	type Follow {
-		id: ID!
 		follower: User!
 		following: User!
+	}
+
+	type FollowPayload {
+		follow: Follow
+		errors: [Error!]!
 	}
 
 	enum NotificationType {
@@ -195,7 +206,7 @@ const typeDefs = `#graphql
 		isRead: Boolean!
 		createdAt: String!
 		notificationType: NotificationType!
-		notifier: User! # If followed, will link to the User's profile
+		notifier: User!
 		notifierArtwork: Artwork
 		notifierComment: Comment
 	}

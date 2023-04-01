@@ -1,5 +1,5 @@
 import { Context } from 'src/types.js';
-import { Artwork, Tag, Notification } from '@prisma/client';
+import { Artwork, Tag, Notification, User } from '@prisma/client';
 import { ArtworkPayloadType } from './mutation/artwork';
 import { UserPayloadType } from './mutation/user';
 
@@ -15,6 +15,14 @@ interface UserFeedArgs {
 interface UserLikesArgs extends UserArgs {
     skip?: number;
     take?: number;
+}
+
+interface UsersPaginatedPayload {
+    users: User[];
+    hasMore: boolean;
+    errors: {
+        message: string;
+    }[];
 }
 
 interface PaginatedArtworksPayloadType {
@@ -274,6 +282,104 @@ const Query = {
             };
         }
     },
+    userFollowers: async (
+        _parent: any,
+        { username, take, skip }: UserLikesArgs,
+        { prisma }: Context
+    ): Promise<UsersPaginatedPayload> => {
+        try {
+            const userFollowers = await prisma.user.findUnique({
+                where: {
+                    username: username,
+                },
+                select: {
+                    followers: {
+                        select: {
+                            follower: true,
+                        },
+                        skip: skip ?? 0,
+                        take: take ?? 10,
+                        orderBy: [{ createdAt: 'desc' }],
+                    },
+                },
+            });
+
+            // Extract each artwork object
+            let followers: User[] = [];
+            userFollowers?.followers.forEach((f) => {
+                followers.push(f.follower!);
+            });
+
+            if (!userFollowers?.followers) {
+                return {
+                    users: [],
+                    hasMore: false,
+                    errors: [],
+                };
+            }
+
+            return {
+                users: followers ?? [],
+                hasMore: userFollowers.followers.length === (take ?? 10),
+                errors: [],
+            };
+        } catch (error) {
+            return {
+                users: [],
+                hasMore: false,
+                errors: [{ message: 'Server Error' }],
+            };
+        }
+    },
+    userFollowings: async (
+        _parent: any,
+        { username, take, skip }: UserLikesArgs,
+        { prisma }: Context
+    ): Promise<UsersPaginatedPayload> => {
+        try {
+            const userFollowers = await prisma.user.findUnique({
+                where: {
+                    username: username,
+                },
+                select: {
+                    following: {
+                        select: {
+                            following: true,
+                        },
+                        skip: skip ?? 0,
+                        take: take ?? 10,
+                        orderBy: [{ createdAt: 'desc' }],
+                    },
+                },
+            });
+
+            // Extract each artwork object
+            let followers: User[] = [];
+            userFollowers?.following.forEach((f) => {
+                followers.push(f.following!);
+            });
+
+            if (!userFollowers?.following) {
+                return {
+                    users: [],
+                    hasMore: false,
+                    errors: [],
+                };
+            }
+
+            return {
+                users: followers ?? [],
+                hasMore: userFollowers.following.length === (take ?? 10),
+                errors: [],
+            };
+        } catch (error) {
+            return {
+                users: [],
+                hasMore: false,
+                errors: [{ message: 'Server Error' }],
+            };
+        }
+    },
     userLikes: async (
         _parent: any,
         { username, take, skip }: UserLikesArgs,
@@ -301,7 +407,7 @@ const Query = {
                 },
             });
 
-			// Extract each artwork object
+            // Extract each artwork object
             let artworks: Artwork[] = [];
             likedArtworks?.likes.forEach((like) => {
                 artworks.push(like.artwork!);

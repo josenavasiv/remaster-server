@@ -18,8 +18,8 @@ model User {
   avatarUrl     String
   createdAt     DateTime       @default(now())
   artworks      Artwork[]
-  followers     Follow[]       @relation("Follower")
-  following     Follow[]       @relation("Following")
+  followers     Follow[]       @relation("Following")
+  following     Follow[]       @relation("Follower")
   followedTags  Tag[]
   notifications Notification[] 
   notified      Notification[] @relation("Notifier")
