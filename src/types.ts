@@ -3,6 +3,7 @@ import { Redis } from 'ioredis';
 import { PrismaClient, Prisma } from '@prisma/client';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import UsersDataSource from './lib/datasources/UsersDataSource';
+import CommentsDataSource from './lib/datasources/CommentsDataSource';
 
 // req.session type
 declare module 'express-session' {
@@ -23,6 +24,7 @@ export interface Context {
     pubsub: RedisPubSub;
     dataSources: {
         users: UsersDataSource;
+        comments: CommentsDataSource;
     };
 }
 

@@ -36,6 +36,7 @@ import cookie from 'cookie';
 
 // Data Sources
 import UsersDataSource from './lib/datasources/UsersDataSource.js';
+import CommentsDataSource from './lib/datasources/CommentsDataSource.js';
 
 // Server Object
 let connection: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>;
@@ -127,6 +128,7 @@ export const startServer = async () => {
                 pubsub,
                 dataSources: {
                     users: new UsersDataSource(prisma),
+                    comments: new CommentsDataSource(prisma),
                 },
             }),
         })
