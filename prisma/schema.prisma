@@ -106,9 +106,9 @@ model Notification {
   userId            Int
   user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   artworkId         Int?
-  artwork           Artwork?         @relation(fields: [artworkId], references: [id])
+  artwork           Artwork?         @relation(fields: [artworkId], references: [id], onDelete: Cascade)
   commentId         Int?
-  comment           Comment?         @relation(fields: [commentId], references: [id])
+  comment           Comment?         @relation(fields: [commentId], references: [id], onDelete: Cascade)
 
   notifierId        Int
   notifier          User             @relation("Notifier", fields: [notifierId], references: [id])

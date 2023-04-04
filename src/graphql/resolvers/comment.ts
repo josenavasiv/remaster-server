@@ -2,14 +2,20 @@ import { Context } from 'src/types';
 import { User, Comment, Like } from '@prisma/client';
 
 const Comment = {
-    commenter: async ({ commenterId }: Comment, _args: any, { prisma }: Context): Promise<User> => {
-        const uploader = await prisma.user.findUnique({
-            where: {
-                id: commenterId,
-            },
-        });
+    commenter: async ({ commenterId }: Comment, _args: any, { dataSources }: Context): Promise<User> => {
+        try {
+            return dataSources.users.getUser(commenterId);
+        } catch (error) {
+            console.log(error);
+            throw new Error('User does not exist');
+        }
+        // const uploader = await prisma.user.findUnique({
+        //     where: {
+        //         id: commenterId,
+        //     },
+        // });
 
-        return uploader!;
+        // return uploader!;
     },
     isLikedByLoggedInUser: async (
         { id, commenterId }: Comment,

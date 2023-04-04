@@ -69,14 +69,20 @@ const Artwork = {
         return artwork.comments;
     },
     // When the query requests an Artwork's uploader, their artworks will be populated by this resolver
-    uploader: async ({ uploaderID }: Artwork, _args: any, { prisma }: Context): Promise<User> => {
-        const uploader = await prisma.user.findUnique({
-            where: {
-                id: uploaderID,
-            },
-        });
+    uploader: async ({ uploaderID }: Artwork, _args: any, { dataSources }: Context): Promise<User> => {
+        try {
+            return dataSources.users.getUser(uploaderID);
+        } catch (error) {
+            console.log(error);
+            throw new Error('User does not exist');
+        }
+        // const uploader = await prisma.user.findUnique({
+        //     where: {
+        //         id: uploaderID,
+        //     },
+        // });
 
-        return uploader!;
+        // return uploader!;
     },
 };
 

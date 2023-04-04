@@ -34,6 +34,9 @@ export const pubsub = new RedisPubSub({
 });
 import cookie from 'cookie';
 
+// Data Sources
+import UsersDataSource from './lib/datasources/UsersDataSource.js';
+
 // Server Object
 let connection: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>;
 
@@ -122,6 +125,9 @@ export const startServer = async () => {
                 prisma,
                 redis,
                 pubsub,
+                dataSources: {
+                    users: new UsersDataSource(prisma),
+                },
             }),
         })
     );
