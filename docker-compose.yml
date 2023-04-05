@@ -21,6 +21,28 @@ services:
             - '8081:6379'
         volumes:
             - redismaster:/data
+    # expressmaster:
+    #     image: express-graphql-app
+    #     restart: always
+    #     container_name: expressmaster
+    #     ports:
+    #         - '4000:4000'
+    #     env_file:
+    #         - .env
+    #     depends_on:
+    #         - pgmaster
+    #         - redismaster
+    # clientmaster:
+    #     image: nextjs-docker
+    #     restart: always
+    #     container_name: clientmaster
+    #     ports:
+    #         - '3000:3000'
+    #     depends_on:
+    #         - pgmaster
+    #         - redismaster
+    #         - expressmaster
+
 volumes:
     pgmaster:
         driver: local
