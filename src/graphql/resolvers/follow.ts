@@ -1,4 +1,4 @@
-import { Context } from 'src/types';
+import { Context } from '../../types.js';
 import { User, Follow } from '@prisma/client';
 
 const Follow = {

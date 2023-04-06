@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
         "target": "es2020",
-        "module": "ES2020",
-        "moduleResolution": "node",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
         "types": ["node", "jest"],
         "lib": ["dom", "es6", "es2017", "esnext.asynciterable", "es2020"],
         "skipLibCheck": true,
@@ -26,5 +26,6 @@
         "baseUrl": ".",
         "typeRoots": ["./types"]
     },
+    "include": ["src/**/*"],
     "exclude": ["node_modules"]
 }

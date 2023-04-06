@@ -2,8 +2,8 @@ import { Request, Response } from 'express';
 import { Redis } from 'ioredis';
 import { PrismaClient, Prisma } from '@prisma/client';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import UsersDataSource from './lib/datasources/UsersDataSource';
-import CommentsDataSource from './lib/datasources/CommentsDataSource';
+import UsersDataSource from './lib/datasources/UsersDataSource.js';
+import CommentsDataSource from './lib/datasources/CommentsDataSource.js';
 
 // req.session type
 declare module 'express-session' {

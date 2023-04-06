@@ -31,7 +31,7 @@ export const comment = {
             throw new Error('Not Authenticated');
         }
 
-        const validComment = validator.isLength(comment, { min: 1, max: 100 });
+        const validComment = validator.default.isLength(comment, { min: 1, max: 100 });
 
         if (!validComment) {
             return {
@@ -113,7 +113,7 @@ export const comment = {
                 throw new Error('Unauthorized');
             }
 
-            const validComment = validator.isLength(comment, { min: 1, max: 100 });
+            const validComment = validator.default.isLength(comment, { min: 1, max: 100 });
 
             if (!validComment) {
                 return {
@@ -191,7 +191,7 @@ export const comment = {
             throw new Error('Not Authenticated');
         }
 
-        const validReply = validator.isLength(comment, { min: 1, max: 100 });
+        const validReply = validator.default.isLength(comment, { min: 1, max: 100 });
 
         if (!validReply) {
             return {

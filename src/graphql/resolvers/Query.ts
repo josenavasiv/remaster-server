@@ -1,7 +1,7 @@
-import { Context } from 'src/types.js';
+import { Context } from '../../types.js';
 import { Artwork, Tag, Notification, User } from '@prisma/client';
-import { ArtworkPayloadType } from './mutation/artwork';
-import { UserPayloadType } from './mutation/user';
+import { ArtworkPayloadType } from './mutation/artwork.js';
+import { UserPayloadType } from './mutation/user.js';
 
 interface UserArgs {
     username: string;

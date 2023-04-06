@@ -5,8 +5,8 @@ const validateArtworkInput = (
 	description: string,
 	imageUrls: string[]
 ): { validInput: boolean; messages: string[] } => {
-	const validTitle = validator.isLength(title, { min: 2, max: 30 });
-	const validDescription = validator.isLength(description, { min: 2, max: 300 });
+	const validTitle = validator.default.isLength(title, { min: 2, max: 30 });
+	const validDescription = validator.default.isLength(description, { min: 2, max: 300 });
 	const validImageUrls = imageUrls.length > 0 && imageUrls.length <= 10;
 
 	let validInput = true;
