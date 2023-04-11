@@ -73,6 +73,8 @@ export const startServer = async () => {
                 }
                 return { userID: null };
             },
+            // onConnect: () => console.log('connected'),
+            // onDisconnect: () => console.log('disconnected'),
         },
         wsServer
     );

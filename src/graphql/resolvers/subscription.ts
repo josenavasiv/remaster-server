@@ -8,8 +8,8 @@ const Subscription = {
                 return pubsub.asyncIterator('NEW_NOTIFICATION');
             },
             (payload, _variables, ctx) => {
-                if (payload.newNotification.notifierId == ctx.userID || ctx.userID == null) return false;
-                return true;
+                if (payload.newNotification.userId == ctx.userID) return true;
+                return false;
             }
         ),
     },
