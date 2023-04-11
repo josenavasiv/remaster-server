@@ -16,7 +16,10 @@ export const prisma = new PrismaClient();
 import session from 'express-session';
 import { Redis } from 'ioredis';
 import RedisStore from 'connect-redis';
-const redis = new Redis(parseInt(process.env.REDIS_PORT as string));
+const redis = new Redis({
+    host: process.env.REDIS_HOST as string,
+    port: parseInt(process.env.REDIS_PORT as string),
+});
 
 // Apollo Server Schema
 import typeDefs from './graphql/schema.js';
@@ -29,8 +32,14 @@ import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 export const pubsub = new RedisPubSub({
-    publisher: new Redis(parseInt(process.env.REDIS_PORT as string)),
-    subscriber: new Redis(parseInt(process.env.REDIS_PORT as string)),
+    publisher: new Redis({
+        host: process.env.REDIS_HOST as string,
+        port: parseInt(process.env.REDIS_PORT as string),
+    }),
+    subscriber: new Redis({
+        host: process.env.REDIS_HOST as string,
+        port: parseInt(process.env.REDIS_PORT as string),
+    }),
 });
 import cookie from 'cookie';
 
@@ -85,21 +94,17 @@ export const startServer = async () => {
 
     await apolloServer.start();
 
-    // if (redis.status !== 'connecting') {
-    // 	// Redis Connection
-    // 	await redis.connect().catch((error) => console.log(error));
-    // }
-
-    app.set('trust proxy', true);
+    app.set('trust proxy', 1);
 
     const sessionCookieMiddlware = session({
         name: COOKIE_NAME,
         store: new RedisStore({ client: redis, disableTouch: true }),
         cookie: {
             maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // Max Age of the Cookie in ms
-            httpOnly: true, // Prevents accessing cooking via the browser
+            httpOnly: !__prod__, // Prevents accessing cooking via the browser
             secure: __prod__, // cookie only work in https (false in development|testing mode)
-            sameSite: 'lax', // csrf
+            sameSite: __prod__ ? 'none' : 'lax', // csrf
+            domain: __prod__ ? process.env.SERVER_DOMAIN : undefined,
         },
         saveUninitialized: false, // Creates a session by default
         secret: process.env.REDIS_SECRET as string,
@@ -107,7 +112,7 @@ export const startServer = async () => {
     });
 
     const corsMiddlware = cors<cors.CorsRequest>({
-        origin: 'http://localhost:3000',
+        origin: __prod__ ? process.env.CLIENT_ORIGIN : 'http://localhost:3000',
         credentials: true,
     });
 

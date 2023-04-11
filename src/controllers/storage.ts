@@ -47,7 +47,7 @@ storageRouter.post('/', async (request, response) => {
                 });
             })
         );
-        console.log(urls);
+
         return response.status(200).send({
             urls,
         });

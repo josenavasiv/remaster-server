@@ -12,39 +12,39 @@ services:
             - '8080:5432'
         volumes:
             - pgmaster:/var/lib/postgresql/data
-    redismaster:
+    redis:
         image: redis:latest
         restart: always
-        container_name: redismaster
+        container_name: redis
         command: redis-server --save 20 1 --loglevel warning
         ports:
             - '8081:6379'
         volumes:
-            - redismaster:/data
-    # expressmaster:
+            - redis:/data
+    # server:
     #     image: express-graphql-app
     #     restart: always
-    #     container_name: expressmaster
+    #     container_name: server
     #     ports:
     #         - '4000:4000'
     #     env_file:
-    #         - .env
+    #         - .env.docker
     #     depends_on:
     #         - pgmaster
-    #         - redismaster
-    # clientmaster:
+    #         - redis
+    # client:
     #     image: nextjs-docker
     #     restart: always
-    #     container_name: clientmaster
+    #     container_name: client
     #     ports:
     #         - '3000:3000'
     #     depends_on:
     #         - pgmaster
-    #         - redismaster
-    #         - expressmaster
+    #         - redis
+            - server
 
 volumes:
     pgmaster:
         driver: local
-    redismaster:
+    redis:
         driver: local
