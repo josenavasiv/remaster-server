@@ -103,7 +103,7 @@ const Query = {
     },
     artworkUploaderOtherArtworks: async (
         _parent: any,
-        { artworkID, take }: { artworkID: string; take?: number },
+        { artworkID, take }: { artworkID: string; take: number | null | undefined },
         { prisma }: Context
     ): Promise<ArtworksPayloadType> => {
         try {

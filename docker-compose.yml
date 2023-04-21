@@ -41,7 +41,7 @@ services:
     #     depends_on:
     #         - pgmaster
     #         - redis
-            - server
+    # - server
 
 volumes:
     pgmaster:
