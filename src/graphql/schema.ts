@@ -3,6 +3,7 @@ const typeDefs = `#graphql
 		hello: String
 		# Artwork
 		artwork(artworkID: ID!): ArtworkPayload! # Clicking on an artwork opens a model with more details about the artwork
+		artworkUploaderOtherArtworks(artworkID: ID!, take: Int): ArtworksPayload! # Apply Explore Algorithm For Logged-In User Here PAGINATION
 		# artworkSearch(): ???
 		# # Comment
 		# comment(commentID: ID!): ???
@@ -22,7 +23,7 @@ const typeDefs = `#graphql
 		userFeed(limit: Int, cursor: Int): ArtworksPaginatedPayload! # Gets the main feed for the logged-in user's feed (Apply Main Feed & Suggested Posts Algorithm Here) (PAGINATION)
 		userLikes(username: String!, skip: Int, take: Int): ArtworksPaginatedPayload!
 		userFollowers(username: String!, skip: Int, take: Int): UsersPaginatedPayload! 
-		userFollowings(username: String!, skip: Int, take: Int): UsersPaginatedPayload! 
+		userFollowings(username: String!, skip: Int, take: Int): UsersPaginatedPayload!
 		# userSuggestedUsers(): # Component will fetch suggested users (For now randomly pick follows of follows)
 	}
 
@@ -140,6 +141,11 @@ const typeDefs = `#graphql
 
 	type ArtworkPayload {
 		artwork: Artwork
+		errors: [Error!]!
+	}
+
+	type ArtworksPayload {
+		artworks: [Artwork!]!
 		errors: [Error!]!
 	}
 

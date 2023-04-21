@@ -25,6 +25,13 @@ interface UsersPaginatedPayload {
     }[];
 }
 
+interface ArtworksPayloadType {
+    artworks: Artwork[];
+    errors: {
+        message: string;
+    }[];
+}
+
 interface PaginatedArtworksPayloadType {
     artworks: Artwork[];
     hasMore: boolean;
@@ -90,6 +97,46 @@ const Query = {
         } catch (error) {
             return {
                 artwork: null,
+                errors: [{ message: 'Server Error' }],
+            };
+        }
+    },
+    artworkUploaderOtherArtworks: async (
+        _parent: any,
+        { artworkID, take }: { artworkID: string; take?: number },
+        { prisma }: Context
+    ): Promise<ArtworksPayloadType> => {
+        try {
+            const artworks = await prisma.artwork.findUnique({
+                where: {
+                    id: Number(artworkID),
+                },
+                select: {
+                    uploader: {
+                        include: {
+                            artworks: {
+                                take: take ?? 6,
+                                orderBy: { createdAt: 'desc' },
+                            },
+                        },
+                    },
+                },
+            });
+
+            if (!artworks) {
+                return {
+                    artworks: [],
+                    errors: [{ message: 'User no longer exists' }],
+                };
+            }
+
+            return {
+                artworks: artworks.uploader.artworks,
+                errors: [],
+            };
+        } catch (error) {
+            return {
+                artworks: [],
                 errors: [{ message: 'Server Error' }],
             };
         }
